@@ -5,12 +5,16 @@ import scipy, librosa, os
 import speakerInfo as sinfo
 import unpackMFC as unmfc
 import pyAudioAnalysis as paa
+from datetime import datetime
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
-num_sets = 20
+outputPath = inputPath + str(datetime.now().time()) + '/'
+num_sets = 1
 
 # pAA settings in ms
+# https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
+paaFunction = 4
 windowSize = 50
 timeStep = 25
 
@@ -22,7 +26,6 @@ featureVectorSize = 13
 featureVectors = dict()
 groundTruths = dict()
 lastSpeaker = -1
-numSpeakers = 0
 
 def forgivingFloatEquivalence(value, standard):
 	return value < -1 * standard - zeroThresh or value > standard + zeroThresh
@@ -41,49 +44,36 @@ def validateNormalization(featureVector):
 def loadFeatureVector(inputPath, featureType):
 	if featureType == 'mfcc':
 		loadMFCCFiles(inputPath)
-	elif featureType == 'centroid':
-		loadCentroidsFromWAV(inputPath)
+	elif featureType == 'paa':
+		loadWAVwithPAA(inputPath)
 	else:
 		print "ERR: unknown feature type", featureType
 		assert False
 
-def loadMFCCFiles(inputPath):	
+def storeFeature(sid, data, filePath):
 	global featureVectors
 	global groundTruths
-	global numSpeakers
 
-	numSpeakers = 0
+	if sid in featureVectors:
+		featureVectors[sid].append(data)
+	else:
+		featureVectors[sid] = [data.tolist()]
+		groundTruths[sid] = sinfo.getTruthValue(filePath)
+
+def loadMFCCFiles(inputPath):	
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.mfc')]
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
 		data = unmfc.run(filePath, featureVectorSize)
+		storeFeature(sid, data, filePath)
 
-		if sid in featureVectors:
-			featureVectors[sid].append(data)
-		else:
-			featureVectors[sid] = [data.tolist()]
-			groundTruths[sid] = sinfo.getTruthValue(filePath)
-			numSpeakers += 1
-
-def loadCentroidsFromWAV(inputPath):
-	numSpeakers = 0
+def loadWAVwithPAA(inputPath):
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.wav')]
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
 		[Fs, x] = paa.audioBasicIO.readAudioFile(filePath)
-		data = paa.audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)
-		# where did the feature extraction algorithm parameter go? are they all run simultaneously? 
-		# Would explain the 2D output with 34 rows (34 algorithms)
-
-		if sid in featureVectors:
-			featureVectors[sid].append(data)
-		else:
-			featureVectors[sid] = [data.tolist()]
-			groundTruths[sid] = sinfo.getTruthValue(filePath)
-			numSpeakers += 1
-	
-	print "ERR: feature type not implemented yet", featureType
-	assert False
+		data = paa.audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)[paaFunction,:]
+		storeFeature(sid, data, filePath)
 
 # returns: feature vector array (2D), ground truth array (1D)
 def collateData(speakerList):
@@ -114,7 +104,7 @@ def getSubset():
 	global lastSpeaker
 
 	testSpeaker = lastSpeaker + 1
-	if testSpeaker >= numSpeakers:
+	if testSpeaker >= len(featureVectors.keys()):
 		testSpeaker = 0
 	speakers = featureVectors.keys()
 	testFeatureVector, testTruthVector = collateData([speakers[testSpeaker]])
@@ -124,6 +114,35 @@ def getSubset():
 	print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
 
+def model_KNN():
+	return sklearn.neighbors.KNeighborsClassifier(n_neighbors=sinfo.getNbClasses())
+
+def model_SVM():
+	return sklearn.svm.SVC()
+
+def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
+	model = model()
+	model.fit(trainFeatureVector, trainTruthVector)
+	predicted_labels = model.predict(testFeatureVector)
+	accuracy = model.score(testFeatureVector, testTruthVector)
+	f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
+
+	f = open(outputPath + tag + '.log', 'w')
+	f.write('accuracy: ' + str(accuracy) + '\tf1: ' + str(f1))
+	f.write('predicted labels followed by truth values')
+	f.write(str(predicted_labels))
+	f.write('\n')
+	f.write(str(testTruthVector))
+	f.close()
+
+	return accuracy, f1
+
+
+
 loadFeatureVector(inputPath, 'mfcc')
-for i in range(num_sets * numSpeakers):
-	getSubset()
+if not os.path.exists(outputPath):
+	os.mkdir(outputPath)
+for i in range(num_sets * len(featureVectors.keys())):
+	trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+	runModel(model_KNN, 'KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM, 'SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
