@@ -10,7 +10,7 @@ from datetime import datetime
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-num_sets = 1
+num_sets = 100
 
 # pAA settings in ms
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -56,9 +56,10 @@ def storeFeature(sid, data, filePath):
 
 	if sid in featureVectors:
 		featureVectors[sid].append(data)
+		groundTruths[sid].append(np.full(len(data), sinfo.getTruthValue(filePath), dtype='int8'))
 	else:
 		featureVectors[sid] = [data.tolist()]
-		groundTruths[sid] = sinfo.getTruthValue(filePath)
+		groundTruths[sid] = [np.full(len(data), sinfo.getTruthValue(filePath), dtype='int8').tolist()]
 
 def loadMFCCFiles(inputPath):	
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.mfc')]
@@ -88,9 +89,9 @@ def collateData(speakerList):
 			print featureVectors.keys()
 			print groundTruths.keys()
 			assert False
-		for featureVector in data:
-			x.extend(featureVector)
-			y.extend(np.full((len(featureVector)), groundTruths[speaker], dtype='int8'))
+		for i in range(len(data)):
+			x.extend(data[i])
+			y.extend(groundTruths[speaker][i])
 
 	sklSS = sklearn.preprocessing.StandardScaler()
 	x = sklSS.fit_transform(x)
@@ -132,7 +133,7 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 	f.write('\n')
 	f.write('predicted labels followed by truth values')
 	f.write('\n')
-	f.write(str(predicted_labels))
+	f.write(str(predicted_labels.tolist()))
 	f.write('\n')
 	f.write(str(testTruthVector))
 	f.close()
