@@ -129,7 +129,9 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 
 	f = open(outputPath + tag + '.log', 'w')
 	f.write('accuracy: ' + str(accuracy) + '\tf1: ' + str(f1))
+	f.write('\n')
 	f.write('predicted labels followed by truth values')
+	f.write('\n')
 	f.write(str(predicted_labels))
 	f.write('\n')
 	f.write(str(testTruthVector))
