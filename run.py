@@ -12,9 +12,11 @@ inputPath = "/home/jkih/Music/sukwoo/"
 outputPath = inputPath + str(datetime.now().time()) + '/'
 num_sets = 100
 
-# pAA settings in ms
+# pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
-paaFunction = 4
+# -1 for all
+paaFunction = -1
+# in ms
 windowSize = 50
 timeStep = 25
 
@@ -26,6 +28,15 @@ featureVectorSize = 13
 featureVectors = dict()
 groundTruths = dict()
 lastSpeaker = -1
+
+def clearVariables():
+	global featureVectors
+	global groundTruths
+	global lastSpeaker
+
+	featureVectors = dict()
+	groundTruths = dict()
+	lastSpeaker = -1
 
 def forgivingFloatEquivalence(value, standard):
 	return value < -1 * standard - zeroThresh or value > standard + zeroThresh
@@ -73,6 +84,7 @@ def loadWAVwithPAA(inputPath):
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
 		[Fs, x] = paa.audioBasicIO.readAudioFile(filePath)
+		assert paaFunction > 0 and paaFunction < 35
 		data = paa.audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)[paaFunction,:]
 		storeFeature(sid, data, filePath)
 
@@ -140,12 +152,25 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 
 	return accuracy, f1
 
-
-
-loadFeatureVector(inputPath, 'mfcc')
-if not os.path.exists(outputPath):
-	os.mkdir(outputPath)
-for i in range(num_sets * len(featureVectors.keys())):
-	trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-	runModel(model_KNN, 'KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM, 'SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+# loadFeatureVector(inputPath, 'mfcc')
+# if not os.path.exists(outputPath):
+# 	os.mkdir(outputPath)
+# for i in range(num_sets * len(featureVectors.keys())):
+# 	trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+# 	runModel(model_KNN, 'MFCC_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+# 	runModel(model_SVM, 'MFCC_SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+if paaFunction < 0:
+	for paaFunction in range(1, 35):
+		clearVariables()
+		loadFeatureVector(inputPath, 'paa')
+		for i in range(num_sets * len(featureVectors.keys())):
+			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+			runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+			runModel(model_SVM, 'PAA_' + str(paaFunction) + '_SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+else:
+	clearVariables()
+	loadFeatureVector(inputPath, 'paa')
+	for i in range(num_sets * len(featureVectors.keys())):
+		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+		runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		runModel(model_SVM, 'PAA_' + str(paaFunction) + '_SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
