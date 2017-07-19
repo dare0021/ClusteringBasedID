@@ -5,7 +5,7 @@ from unpackMFC import run as unmfc
 from pyAudioAnalysis import audioBasicIO, audioFeatureExtraction
 from datetime import datetime
 import sklearn 
-from sklearn import *
+from sklearn import neighbors, svm, cluster
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
