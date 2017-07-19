@@ -1,16 +1,14 @@
 import numpy as np
-import sklearn 
-import matplotlib.pyplot as plt
-import scipy, librosa, os
+import sklearn, os
 import speakerInfo as sinfo
-import unpackMFC as unmfc
-import pyAudioAnalysis as paa
+from unpackMFC import run as unmfc
+from pyAudioAnalysis import audioBasicIO, audioFeatureExtraction
 from datetime import datetime
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-num_sets = 100
+num_sets = 1
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -76,16 +74,16 @@ def loadMFCCFiles(inputPath):
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.mfc')]
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
-		data = unmfc.run(filePath, featureVectorSize)
+		data = unmfc(filePath, featureVectorSize)
 		storeFeature(sid, data, filePath)
 
 def loadWAVwithPAA(inputPath):
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.wav')]
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
-		[Fs, x] = paa.audioBasicIO.readAudioFile(filePath)
+		[Fs, x] = audioBasicIO.readAudioFile(filePath)
 		assert paaFunction > 0 and paaFunction < 35
-		data = paa.audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)[paaFunction,:]
+		data = audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)[paaFunction,:]
 		storeFeature(sid, data, filePath)
 
 # returns: feature vector array (2D), ground truth array (1D)
@@ -127,14 +125,44 @@ def getSubset():
 	print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
 
+def model_LinearRegression():
+	print 'Running Linear Regression'
+	return sklearn.linear_model.LinearRegression()
+
+def model_Ridge():
+	print 'Running Ridge'
+	return sklearn.linear_model.Ridge(alpha=0.1)
+
+def model_Lasso():
+	print 'Running Lasso'
+	return sklearn.linear_model.Lasso()
+
 def model_KNN():
+	print 'Running KNN'
 	return sklearn.neighbors.KNeighborsClassifier(n_neighbors=sinfo.getNbClasses())
 
-def model_SVM():
-	return sklearn.svm.SVC()
+def model_SVM_linear():
+	print 'Running SVM Linear'
+	return sklearn.svm.SVC(kernel='linear')
+
+def model_SVM_poly():
+	print 'Running SVM Poly'
+	return sklearn.svm.SVC(kernel='poly')
+
+# Radial Basis Function
+def model_SVM_rbf():
+	print 'Running SVM RBF'
+	return sklearn.svm.SVC(kernel='rbf')
+
+def model_Spectral():
+	print 'Running Spectral Clustering'
+	return sklearn.cluster.SpectralClustering(n_clusters=sinfo.getNbClasses())
+
+def model_Birch():
+	print 'Running Birch'
+	return sklearn.cluster.Birch(n_clusters=sinfo.getNbClasses())
 
 def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	model = model()
 	model.fit(trainFeatureVector, trainTruthVector)
 	predicted_labels = model.predict(testFeatureVector)
 	accuracy = model.score(testFeatureVector, testTruthVector)
@@ -152,6 +180,18 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 
 	return accuracy, f1
 
+def runAllModels(trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
+	runModel(model_LinearRegression(), 'PAA_' + str(paaFunction) + '_LinearRegression_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Ridge(), 'PAA_' + str(paaFunction) + '_Ridge_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Lasso(), 'PAA_' + str(paaFunction) + '_Lasso_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_KNN(), 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_linear(), 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_rbf(), 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+
+
 # loadFeatureVector(inputPath, 'mfcc')
 # if not os.path.exists(outputPath):
 # 	os.mkdir(outputPath)
@@ -165,12 +205,10 @@ if paaFunction < 0:
 		loadFeatureVector(inputPath, 'paa')
 		for i in range(num_sets * len(featureVectors.keys())):
 			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-			runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-			runModel(model_SVM, 'PAA_' + str(paaFunction) + '_SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+			runAllModels(trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 else:
 	clearVariables()
 	loadFeatureVector(inputPath, 'paa')
 	for i in range(num_sets * len(featureVectors.keys())):
-		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-		runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-		runModel(model_SVM, 'PAA_' + str(paaFunction) + '_SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()		
+		runAllModels(trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
