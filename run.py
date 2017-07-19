@@ -10,7 +10,7 @@ from sklearn import neighbors, svm, cluster
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-num_sets = 1
+num_sets = 20
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -136,6 +136,10 @@ def model_KNN():
 	print 'Running KNN'
 	return sklearn.neighbors.KNeighborsClassifier(n_neighbors=sinfo.getNbClasses())
 
+def model_RNC():
+	print 'Running RNC'
+	return sklearn.neighbors.RadiusNeighborsClassifier()
+
 def model_SVM_linear():
 	print 'Running SVM Linear'
 	return sklearn.svm.SVC(kernel='linear')
@@ -149,10 +153,14 @@ def model_SVM_rbf():
 	print 'Running SVM RBF'
 	return sklearn.svm.SVC(kernel='rbf')
 
+# not enough memory
 def model_Spectral():
 	print 'Running Spectral Clustering'
 	return sklearn.cluster.SpectralClustering(n_clusters=sinfo.getNbClasses())
 
+# clustering class incompatible with classifiers
+# clustering is deterministic, non-ML? Doesn't seem to use training at all.
+# http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
 def model_Birch():
 	print 'Running Birch'
 	return sklearn.cluster.Birch(n_clusters=sinfo.getNbClasses())
@@ -177,11 +185,12 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 
 def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	runModel(model_KNN(), 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_RNC(), 'PAA_' + str(paaFunction) + '_RNC_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_linear(), 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_rbf(), 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	# runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	# runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 
 def script():
