@@ -1,9 +1,11 @@
 import numpy as np
-import sklearn, os
+import os
 import speakerInfo as sinfo
 from unpackMFC import run as unmfc
 from pyAudioAnalysis import audioBasicIO, audioFeatureExtraction
 from datetime import datetime
+import sklearn 
+from sklearn import *
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
@@ -67,7 +69,9 @@ def storeFeature(sid, data, filePath):
 		featureVectors[sid].append(data)
 		groundTruths[sid].append(np.full(len(data), sinfo.getTruthValue(filePath), dtype='int8'))
 	else:
-		featureVectors[sid] = [data.tolist()]
+		if type(data) is np.ndarray:
+			data = data.tolist()
+		featureVectors[sid] = [data]
 		groundTruths[sid] = [np.full(len(data), sinfo.getTruthValue(filePath), dtype='int8').tolist()]
 
 def loadMFCCFiles(inputPath):	
@@ -84,6 +88,9 @@ def loadWAVwithPAA(inputPath):
 		[Fs, x] = audioBasicIO.readAudioFile(filePath)
 		assert paaFunction > 0 and paaFunction < 35
 		data = audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)[paaFunction,:]
+		# using 1D feature vector breaks my code, sklearn code, and probably the law
+		if len(np.array(data).shape) < 2:
+			data = [[datum] for datum in data]
 		storeFeature(sid, data, filePath)
 
 # returns: feature vector array (2D), ground truth array (1D)
@@ -124,18 +131,6 @@ def getSubset():
 	lastSpeaker = testSpeaker
 	print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
-
-def model_LinearRegression():
-	print 'Running Linear Regression'
-	return sklearn.linear_model.LinearRegression()
-
-def model_Ridge():
-	print 'Running Ridge'
-	return sklearn.linear_model.Ridge(alpha=0.1)
-
-def model_Lasso():
-	print 'Running Lasso'
-	return sklearn.linear_model.Lasso()
 
 def model_KNN():
 	print 'Running KNN'
@@ -180,10 +175,7 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 
 	return accuracy, f1
 
-def runAllModels(trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	runModel(model_LinearRegression(), 'PAA_' + str(paaFunction) + '_LinearRegression_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Ridge(), 'PAA_' + str(paaFunction) + '_Ridge_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Lasso(), 'PAA_' + str(paaFunction) + '_Lasso_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	runModel(model_KNN(), 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_linear(), 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
@@ -192,23 +184,24 @@ def runAllModels(trainFeatureVector, testFeatureVector, trainTruthVector, testTr
 	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 
-# loadFeatureVector(inputPath, 'mfcc')
-# if not os.path.exists(outputPath):
-# 	os.mkdir(outputPath)
-# for i in range(num_sets * len(featureVectors.keys())):
-# 	trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-# 	runModel(model_KNN, 'MFCC_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-# 	runModel(model_SVM, 'MFCC_SVM_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-if paaFunction < 0:
-	for paaFunction in range(1, 35):
+def script():
+	global paaFunction
+
+	if not os.path.exists(outputPath):
+		os.mkdir(outputPath)
+	if paaFunction < 0:
+		for paaFunction in range(1, 35):
+			print "Running feature extraction #" + str(paaFunction)
+			clearVariables()
+			loadFeatureVector(inputPath, 'paa')
+			for i in range(num_sets * len(featureVectors.keys())):
+				trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+				runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	else:
 		clearVariables()
 		loadFeatureVector(inputPath, 'paa')
 		for i in range(num_sets * len(featureVectors.keys())):
-			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-			runAllModels(trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-else:
-	clearVariables()
-	loadFeatureVector(inputPath, 'paa')
-	for i in range(num_sets * len(featureVectors.keys())):
-		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()		
-		runAllModels(trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()		
+			runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+
+script()
