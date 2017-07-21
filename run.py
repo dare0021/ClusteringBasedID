@@ -7,6 +7,7 @@ from datetime import datetime
 import sklearn 
 from sklearn import neighbors, svm, cluster
 
+
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
 outputPath = inputPath + str(datetime.now().time()) + '/'
@@ -178,29 +179,22 @@ def model_Spectral():
 	print 'Running Spectral Clustering'
 	return sklearn.cluster.SpectralClustering(n_clusters=sinfo.getNbClasses())
 
+# not enough memory
 def model_MiniK():
 	print 'Running Mini K'
 	return sklearn.cluster.MiniBatchKMeans(n_clusters=sinfo.getNbClasses())
 
-def model_AffinityPropagation():
-	print 'Running Affinity Propagation'
-	return sklearn.cluster.AffinityPropagation()
-
-def model_MeanShift():
-	print 'Running Mean Shift'
-	return sklearn.cluster.MeanShift()
-
-def model_Ward():
+def model_ACWard():
 	print 'Running Ward'
-	return sklearn.cluster.Ward(n_clusters=sinfo.getNbClasses())
+	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='ward')
 
-def model_AgglomerativeClustering():
+def model_ACComplete():
 	print 'Running Agglomerative'
-	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses())
+	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='complete')
 
-def model_DBSCAN():
-	print 'Running DBSCAN'
-	return sklearn.cluster.DBSCAN()
+def model_ACAverage():
+	print 'Running Agglomerative'
+	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='average')
 
 # clustering class incompatible with classifiers
 # clustering is deterministic, non-ML? Doesn't seem to use training at all.
@@ -211,13 +205,15 @@ def model_Birch():
 
 def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	model.fit(trainFeatureVector, trainTruthVector)
-	predicted_labels = model.predict(testFeatureVector)
 	accuracy = -1
 	f1 = -1
 	try:
+		predicted_labels = model.predict(testFeatureVector)
 		accuracy = model.score(testFeatureVector, testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
-	except AttributeError:
+	except: AttributeError:
+		# some models only have online modes
+		predicted_labels = model.fit_predict(testFeatureVector)
 		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
 		recall = recallCalc(predicted_labels, testTruthVector)
 		f1 = float(2) * accuracy * recall / (accuracy + recall)
@@ -241,11 +237,10 @@ def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, tes
 	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_rbf(), 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	# runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_MiniK(), 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_AffinityPropagation(), 'PAA_' + str(paaFunction) + '_AffinityPropagation_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_MeanShift(), 'PAA_' + str(paaFunction) + '_MeanShift_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Ward(), 'PAA_' + str(paaFunction) + '_Ward_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_AgglomerativeClustering(), 'PAA_' + str(paaFunction) + '_Agglomerative_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	# runModel(model_MiniK(), 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACWard(), 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACAverage(), 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACComplete(), 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 
