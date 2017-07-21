@@ -41,6 +41,25 @@ def clearVariables():
 def forgivingFloatEquivalence(value, standard):
 	return value < -1 * standard - zeroThresh or value > standard + zeroThresh
 
+def pairwiseComparison(a, b):
+	retval = []
+	for i, j in zip(a, b):
+		if i == j:
+			retval.append(True)
+		else:
+			retval.append(False)
+	return retval
+
+def recallCalc(test, truth):
+	correct = 0
+	dividend = 0
+	for tst, trt in zip(test, truth):
+		if trt:
+			dividend += 1
+			if tst:
+				correct +=1
+	return float(correct) / dividend
+
 def validateNormalization(featureVector):
 	for mean in featureVector.mean(axis=0):
 		if forgivingFloatEquivalence(mean, 0):
@@ -136,6 +155,7 @@ def model_KNN():
 	print 'Running KNN'
 	return sklearn.neighbors.KNeighborsClassifier(n_neighbors=sinfo.getNbClasses())
 
+# data set too small
 def model_RNC():
 	print 'Running RNC'
 	return sklearn.neighbors.RadiusNeighborsClassifier()
@@ -158,6 +178,30 @@ def model_Spectral():
 	print 'Running Spectral Clustering'
 	return sklearn.cluster.SpectralClustering(n_clusters=sinfo.getNbClasses())
 
+def model_MiniK():
+	print 'Running Mini K'
+	return sklearn.cluster.MiniBatchKMeans(n_clusters=sinfo.getNbClasses())
+
+def model_AffinityPropagation():
+	print 'Running Affinity Propagation'
+	return sklearn.cluster.AffinityPropagation()
+
+def model_MeanShift():
+	print 'Running Mean Shift'
+	return sklearn.cluster.MeanShift()
+
+def model_Ward():
+	print 'Running Ward'
+	return sklearn.cluster.Ward(n_clusters=sinfo.getNbClasses())
+
+def model_AgglomerativeClustering():
+	print 'Running Agglomerative'
+	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses())
+
+def model_DBSCAN():
+	print 'Running DBSCAN'
+	return sklearn.cluster.DBSCAN()
+
 # clustering class incompatible with classifiers
 # clustering is deterministic, non-ML? Doesn't seem to use training at all.
 # http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
@@ -168,8 +212,15 @@ def model_Birch():
 def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	model.fit(trainFeatureVector, trainTruthVector)
 	predicted_labels = model.predict(testFeatureVector)
-	accuracy = model.score(testFeatureVector, testTruthVector)
-	f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
+	accuracy = -1
+	f1 = -1
+	try:
+		accuracy = model.score(testFeatureVector, testTruthVector)
+		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
+	except AttributeError:
+		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
+		recall = recallCalc(predicted_labels, testTruthVector)
+		f1 = float(2) * accuracy * recall / (accuracy + recall)
 
 	f = open(outputPath + tag + '.log', 'w')
 	f.write('accuracy: ' + str(accuracy) + '\tf1: ' + str(f1))
@@ -185,12 +236,17 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 
 def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	runModel(model_KNN(), 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_RNC(), 'PAA_' + str(paaFunction) + '_RNC_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	# runModel(model_RNC(), 'PAA_' + str(paaFunction) + '_RNC_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_linear(), 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_rbf(), 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	# runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	# runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_MiniK(), 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_AffinityPropagation(), 'PAA_' + str(paaFunction) + '_AffinityPropagation_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_MeanShift(), 'PAA_' + str(paaFunction) + '_MeanShift_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Ward(), 'PAA_' + str(paaFunction) + '_Ward_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_AgglomerativeClustering(), 'PAA_' + str(paaFunction) + '_Agglomerative_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 
 def script():
