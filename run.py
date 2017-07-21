@@ -185,15 +185,15 @@ def model_MiniK():
 	return sklearn.cluster.MiniBatchKMeans(n_clusters=sinfo.getNbClasses())
 
 def model_ACWard():
-	print 'Running Ward'
+	print 'Running AC Ward'
 	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='ward')
 
 def model_ACComplete():
-	print 'Running Agglomerative'
+	print 'Running AC Complete'
 	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='complete')
 
 def model_ACAverage():
-	print 'Running Agglomerative'
+	print 'Running AC Average'
 	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='average')
 
 # clustering class incompatible with classifiers
@@ -211,7 +211,7 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 		predicted_labels = model.predict(testFeatureVector)
 		accuracy = model.score(testFeatureVector, testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
-	except: AttributeError:
+	except AttributeError:
 		# some models only have online modes
 		predicted_labels = model.fit_predict(testFeatureVector)
 		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
