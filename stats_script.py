@@ -38,8 +38,13 @@ def getAlgoName(fileName):
 	fileName = fileName[fileName.find('_')+1:fileName.rfind('_')]
 	return fileName[fileName.find('_')+1:fileName.rfind('_')]
 
+def getFeatureNum(fileName):
+	fileName = fileName[fileName.find('_')+1:]
+	return int(fileName[:fileName.find('_')])
+
 def loadFiles():
 	global results
+	global PAAFeatureVectors
 
 	filePaths = [directory + f for f in os.listdir(directory) if os.path.isfile(directory + f) and f.endswith(".log")]
 
@@ -58,7 +63,7 @@ def loadFiles():
 		algorithm = getAlgoName(fileName)
 		featureVector = "MFCC Sphinx"
 		if fileName.startswith("PAA"):
-			featureVector = PAAFeatureVectors[int(fileName[4:5])]
+			featureVector = PAAFeatureVectors[getFeatureNum(fileName)]
 		accuracy = float(s[10:s.find('\t')])
 		f1 = float(s[s.find('f1: ')+4:])
 		fileNum = int(fileName[fileName.find(algorithm)+len(algorithm)+1:fileName.rfind('_')])
@@ -156,4 +161,4 @@ def saveToFile(savePath, verbose=0):
 	f.close()
 
 loadFiles()
-# saveToFile(directory + 'stats.txt', 1)
+saveToFile(directory + 'stats.txt', 1)
