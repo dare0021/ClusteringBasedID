@@ -11,7 +11,7 @@ from sklearn import neighbors, svm, cluster
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-num_sets = 20
+num_sets = 3
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
