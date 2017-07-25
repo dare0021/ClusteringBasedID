@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 
 directory = "/home/jkih/Music/sukwoo/12:33:28.796560/"
 
@@ -135,7 +136,7 @@ def saveStats(f, accuracies, f1s):
 	saveAndPrint(f, kvpDisp('F1 stdv', np.std(f1s)))
 	f.write('\n')
 
-def saveToFile(savePath, verbose=0):
+def saveToFile(saveDir, verbose=0):
 	accuracies = []
 	f1s = []
 
@@ -143,8 +144,9 @@ def saveToFile(savePath, verbose=0):
 		accuracies.append(result.accuracy)
 		f1s.append(result.f1)
 
-	assert not os.path.isfile(savePath)
-	f = open(savePath, 'w')
+	assert not os.path.isdir(saveDir)
+	os.mkdir(saveDir)
+	f = open(saveDir + "summary.txt", 'w')
 	saveStats(f, accuracies, f1s)
 
 	if verbose > 0:
@@ -161,4 +163,4 @@ def saveToFile(savePath, verbose=0):
 	f.close()
 
 loadFiles()
-saveToFile(directory + 'stats.txt', 1)
+saveToFile(directory + 'stats/', 2)
