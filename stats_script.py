@@ -2,7 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-directory = "/home/jkih/Music/sukwoo/12:33:28.796560/"
+inputPath = "/home/jkih/Music/sukwoo/12:33:28.796560/"
+outputPath = inputPath + 'stats/'
 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
 PAAFeatureVectors = ['Dummy', 'Zero Crossing Rate', 'Energy', 'Entropy of Energy', 'Spectral Centroid', 'Spectral Spread', 'Spectral Entropy', 'Spectral Flux', 'Spectral Rolloff']
@@ -47,7 +48,7 @@ def loadFiles():
 	global results
 	global PAAFeatureVectors
 
-	filePaths = [directory + f for f in os.listdir(directory) if os.path.isfile(directory + f) and f.endswith(".log")]
+	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
 	for i in range(9, 22):
 		PAAFeatureVectors.append('MFCC ' + str(i))
@@ -91,7 +92,7 @@ def saveBySpeaker(f):
 	f.write('Stats by Speaker\n')
 	for speaker in accs.keys():
 		saveAndPrint(f, kvpDisp('Speaker', speaker))
-		saveStats(f, accs[speaker], f1s[speaker])
+		saveStats(f, accs[speaker], f1s[speaker], inputPath)
 		f.write('\n')
 
 def saveByFeature(f):
@@ -124,7 +125,7 @@ def saveByModel(f):
 		saveStats(f, accs[md], f1s[md])
 		f.write('\n')
 
-def saveStats(f, accuracies, f1s):
+def saveStats(f, accuracies, f1s, plotFileNameStub=''):
 	saveAndPrint(f, kvpDisp('Accuracy mean', np.mean(accuracies)))
 	saveAndPrint(f, kvpDisp('Accuracy min ', np.min(accuracies)))
 	saveAndPrint(f, kvpDisp('Accuracy max ', np.max(accuracies)))
@@ -136,7 +137,11 @@ def saveStats(f, accuracies, f1s):
 	saveAndPrint(f, kvpDisp('F1 stdv', np.std(f1s)))
 	f.write('\n')
 
-def saveToFile(saveDir, verbose=0):
+	if len(plotFileNameStub) > 0:
+		boxplot(accuracies, plotFileNameStub + '_accuracies.png')
+		boxplot(f1s, plotFileNameStub + '_f1s.png')
+
+def saveToFile(verbose=0):
 	accuracies = []
 	f1s = []
 
@@ -144,9 +149,9 @@ def saveToFile(saveDir, verbose=0):
 		accuracies.append(result.accuracy)
 		f1s.append(result.f1)
 
-	assert not os.path.isdir(saveDir)
-	os.mkdir(saveDir)
-	f = open(saveDir + "summary.txt", 'w')
+	assert not os.path.isdir(outputPath)
+	os.mkdir(outputPath)
+	f = open(outputPath + "summary.txt", 'w')
 	saveStats(f, accuracies, f1s)
 
 	if verbose > 0:
@@ -162,5 +167,14 @@ def saveToFile(saveDir, verbose=0):
 
 	f.close()
 
+def boxplot(data, saveFile=''):
+	plt.figure()
+	plt.boxplot(data)
+	# ADD %saveFile% AS TITLE
+	if len(saveFile) > 0:
+		plt.savefig(outputPath + saveFile)
+	else:
+		plt.show()
+
 loadFiles()
-saveToFile(directory + 'stats/', 2)
+saveToFile(2)
