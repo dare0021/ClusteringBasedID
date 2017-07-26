@@ -1,12 +1,14 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image as imaging
 
 inputPath = "/home/jkih/Music/sukwoo/12:33:28.796560/"
 outputPath = inputPath + 'stats/'
 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
 PAAFeatureVectors = ['Zero Crossing Rate', 'Energy', 'Entropy of Energy', 'Spectral Centroid', 'Spectral Spread', 'Spectral Entropy', 'Spectral Flux', 'Spectral Rolloff']
+tfColors = [(255,0,0),(0,255,0),(255,255,255)]
 
 results = []
 
@@ -179,15 +181,47 @@ def boxplot(data, saveFile=''):
 		plt.show()
 
 def textToBoolList(txt):
-	txt = txt[1:len(txt)-1]
+	decrement = 1
+	if txt[-1] == '\n':
+		decrement = 2
+	txt = txt[1:len(txt)-decrement]
 	txt = txt.split(', ')
 	return [bool(int(i)) for i in txt]
 
-def drawPixelGraph(f):
-	f.readline()
-	f.readline()
-	predList = textToBoolList(f.readline())
-	trueList = textToBoolList(f.readline())
+def drawPixelGraph(numList, colorList, filePath):
+	def numToColor(num):
+		return colorList[num]
 
-loadFiles()
-saveToFile(2)
+	width = int(len(numList)**.5)
+	height = len(numList) // width
+	if width * height < len(numList):
+		height += 1
+	assert width * height >= len(numList)
+	numList = np.pad(numList, (0, width * height - len(numList)), 'constant', constant_values=2)
+	numList.resize(width, height)
+	pxs = np.array([map(numToColor, i) for i in numList], dtype='int8')
+	img = imaging.fromarray(pxs, 'RGB')
+	img.save(filePath)
+
+def drawPixelGraphs():
+	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
+
+	for filePath in filePaths:		
+		fileName = filePath[filePath.rfind('/')+1:]
+		f = open(filePath, 'r')
+		f.readline()
+		f.readline()
+		numList = textToBoolList(f.readline())
+		trueList = textToBoolList(f.readline())
+		drawPixelGraph(numList, tfColors, outputPath + fileName + '_pred.png')
+		drawPixelGraph(trueList, tfColors, outputPath + fileName + '_true.png')
+		f.close()
+
+# loadFiles()
+# saveToFile(2)
+f = open('/home/jkih/Music/sukwoo/PAA Full Set 0725 ish/PAA_0_ACAvg_0_seo.log')
+f.readline()
+f.readline()
+numList = textToBoolList(f.readline())
+trueList = textToBoolList(f.readline())
+drawPixelGraph(numList,tfColors, '/home/jkih/projects/test.png')
