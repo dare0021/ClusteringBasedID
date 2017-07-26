@@ -6,7 +6,7 @@ inputPath = "/home/jkih/Music/sukwoo/12:33:28.796560/"
 outputPath = inputPath + 'stats/'
 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
-PAAFeatureVectors = ['Dummy', 'Zero Crossing Rate', 'Energy', 'Entropy of Energy', 'Spectral Centroid', 'Spectral Spread', 'Spectral Entropy', 'Spectral Flux', 'Spectral Rolloff']
+PAAFeatureVectors = ['Zero Crossing Rate', 'Energy', 'Entropy of Energy', 'Spectral Centroid', 'Spectral Spread', 'Spectral Entropy', 'Spectral Flux', 'Spectral Rolloff']
 
 results = []
 

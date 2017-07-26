@@ -106,7 +106,7 @@ def loadWAVwithPAA(inputPath):
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
 		[Fs, x] = audioBasicIO.readAudioFile(filePath)
-		assert paaFunction > 0 and paaFunction < 35
+		assert paaFunction > -1 and paaFunction < 34
 		data = audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)[paaFunction,:]
 		# using 1D feature vector breaks my code, sklearn code, and probably the law
 		if len(np.array(data).shape) < 2:
@@ -250,7 +250,7 @@ def script():
 	if not os.path.exists(outputPath):
 		os.mkdir(outputPath)
 	if paaFunction < 0:
-		for paaFunction in range(1, 35):
+		for paaFunction in range(0, 34):
 			print "Running feature extraction #" + str(paaFunction)
 			clearVariables()
 			loadFeatureVector(inputPath, 'paa')
