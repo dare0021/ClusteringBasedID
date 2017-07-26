@@ -244,7 +244,7 @@ def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, tes
 	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 
-def script():
+def runPaaFunctions():
 	global paaFunction
 
 	if not os.path.exists(outputPath):
@@ -264,4 +264,14 @@ def script():
 			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()		
 			runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
-script()
+def runSphinxFiles():
+	if not os.path.exists(outputPath):
+		os.mkdir(outputPath)
+	clearVariables()
+	loadFeatureVector(inputPath, 'mfcc')
+	for i in range(num_sets * len(featureVectors.keys())):
+		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+		runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+
+# runPaaFunctions()
+runSphinxFiles()
