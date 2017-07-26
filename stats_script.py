@@ -178,7 +178,16 @@ def boxplot(data, saveFile=''):
 	else:
 		plt.show()
 
-def drawPixelGraph(filePath):
+def textToBoolList(txt):
+	txt = txt[1:len(txt)-1]
+	txt = txt.split(', ')
+	return [bool(int(i)) for i in txt]
+
+def drawPixelGraph(f):
+	f.readline()
+	f.readline()
+	predList = textToBoolList(f.readline())
+	trueList = textToBoolList(f.readline())
 
 loadFiles()
 saveToFile(2)
