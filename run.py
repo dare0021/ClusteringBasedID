@@ -110,7 +110,7 @@ def loadWAVwithPAA(inputPath):
 		if filePath in featureVectorCache.keys():
 			data = featureVectorCache[filePath]
 		else:
-			[Fs, x] = audioBasicIO.readAudioFile(filePath)[paaFunction,:]
+			[Fs, x] = audioBasicIO.readAudioFile(filePath)
 			assert paaFunction > -1 and paaFunction < 34
 			data = audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)
 			featureVectorCache[filePath] = data
