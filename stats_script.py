@@ -9,7 +9,9 @@ pixelGraphZoom = 5
 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
 PAAFeatureVectors = ['Zero Crossing Rate', 'Energy', 'Entropy of Energy', 'Spectral Centroid', 'Spectral Spread', 'Spectral Entropy', 'Spectral Flux', 'Spectral Rolloff']
-tfColors = [(255,0,0),(0,255,0),(255,255,255)]
+tfColors = [(225,90,90),(20,230,40),(255,255,255)]
+# TP FP FN TN Padding
+compColors = [(20,230,40),(225,90,90),(240,240,60),(90,175,240),(255,255,255)]
 
 results = []
 
@@ -198,7 +200,7 @@ def drawPixelGraph(numList, colorList, filePath):
 	if width * height < len(numList):
 		height += 1
 	assert width * height >= len(numList)
-	numList = np.pad(numList, (0, width * height - len(numList)), 'constant', constant_values=2)
+	numList = np.pad(numList, (0, width * height - len(numList)), 'constant', constant_values=len(colorList)-1)
 	numList.resize(width, height)
 	pxs = np.array([map(numToColor, i) for i in numList], dtype='int8')
 	img = imaging.fromarray(pxs, 'RGB')
@@ -215,15 +217,27 @@ def drawPixelGraphs():
 		f.readline()
 		predList = textToIntList(f.readline())
 		trueList = textToIntList(f.readline())
+		compList = getComparisonList(predList, trueList)
 		drawPixelGraph(predList, tfColors, outputPath + fileName + '_pred.png')
 		drawPixelGraph(trueList, tfColors, outputPath + fileName + '_true.png')
+		drawPixelGraph(compList, compColors, outputPath + fileName + '_comp.png')
 		f.close()
+
+def getComparisonList(predList, trueList):
+	retval = np.zeros(len(predList), dtype='int8')
+	for i in range(len(predList)):
+		if predList[i] == trueList[i]:
+			if predList[i]:
+				retval[i] = 0
+			else:
+				retval[i] = 3
+		else:
+			if predList[i]:
+				retval[i] = 1
+			else:
+				retval[i] = 2
+	return retval
 
 # loadFiles()
 # saveToFile(2)
-f = open('/home/jkih/Music/sukwoo/PAA Full Set 0725 ish/PAA_0_ACAvg_0_seo.log')
-f.readline()
-f.readline()
-predList = textToIntList(f.readline())
-trueList = textToIntList(f.readline())
-drawPixelGraph(predList,tfColors, '/home/jkih/projects/test.png')
+drawPixelGraphs()
