@@ -181,13 +181,13 @@ def boxplot(data, saveFile=''):
 	else:
 		plt.show()
 
-def textToBoolList(txt):
+def textToIntList(txt):
 	decrement = 1
 	if txt[-1] == '\n':
 		decrement = 2
 	txt = txt[1:len(txt)-decrement]
 	txt = txt.split(', ')
-	return [bool(int(i)) for i in txt]
+	return [int(i) for i in txt]
 
 def drawPixelGraph(numList, colorList, filePath):
 	def numToColor(num):
@@ -213,9 +213,9 @@ def drawPixelGraphs():
 		f = open(filePath, 'r')
 		f.readline()
 		f.readline()
-		numList = textToBoolList(f.readline())
-		trueList = textToBoolList(f.readline())
-		drawPixelGraph(numList, tfColors, outputPath + fileName + '_pred.png')
+		predList = textToIntList(f.readline())
+		trueList = textToIntList(f.readline())
+		drawPixelGraph(predList, tfColors, outputPath + fileName + '_pred.png')
 		drawPixelGraph(trueList, tfColors, outputPath + fileName + '_true.png')
 		f.close()
 
@@ -224,6 +224,6 @@ def drawPixelGraphs():
 f = open('/home/jkih/Music/sukwoo/PAA Full Set 0725 ish/PAA_0_ACAvg_0_seo.log')
 f.readline()
 f.readline()
-numList = textToBoolList(f.readline())
-trueList = textToBoolList(f.readline())
-drawPixelGraph(numList,tfColors, '/home/jkih/projects/test.png')
+predList = textToIntList(f.readline())
+trueList = textToIntList(f.readline())
+drawPixelGraph(predList,tfColors, '/home/jkih/projects/test.png')
