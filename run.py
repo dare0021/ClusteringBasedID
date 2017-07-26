@@ -27,6 +27,7 @@ featureVectorSize = 13
 
 # no touch
 featureVectors = dict()
+featureVectorCache = dict()
 groundTruths = dict()
 lastSpeaker = -1
 
@@ -105,9 +106,15 @@ def loadWAVwithPAA(inputPath):
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.wav')]
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
-		[Fs, x] = audioBasicIO.readAudioFile(filePath)
-		assert paaFunction > -1 and paaFunction < 34
-		data = audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)[paaFunction,:]
+		data = None
+		if filePath in featureVectorCache.keys():
+			data = featureVectorCache[filePath]
+		else:
+			[Fs, x] = audioBasicIO.readAudioFile(filePath)[paaFunction,:]
+			assert paaFunction > -1 and paaFunction < 34
+			data = audioFeatureExtraction.stFeatureExtraction(x, Fs, 0.001 * windowSize * Fs, 0.001 * timeStep * Fs)
+			featureVectorCache[filePath] = data
+		data = data[paaFunction,:]
 		# using 1D feature vector breaks my code, sklearn code, and probably the law
 		if len(np.array(data).shape) < 2:
 			data = [[datum] for datum in data]
