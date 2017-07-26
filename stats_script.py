@@ -154,12 +154,14 @@ def saveToFile(verbose=0):
 	f = open(outputPath + "summary.txt", 'w')
 	saveStats(f, accuracies, f1s)
 
+	# by speaker & feature vector
 	if verbose > 0:
 		saveBySpeaker(f)
 		f.write("\n")
 		saveByFeature(f)
 		f.write("\n")
 
+	# copy of each result file minus the raw output
 	if verbose > 1:
 		for result in results:
 			f.write(result)
@@ -175,6 +177,8 @@ def boxplot(data, saveFile=''):
 		plt.savefig(outputPath + saveFile)
 	else:
 		plt.show()
+
+def drawPixelGraph(filePath):
 
 loadFiles()
 saveToFile(2)
