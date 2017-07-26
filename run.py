@@ -266,7 +266,7 @@ def runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector,
 	runModel(model_SVM_linear(), 'MFCC_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_poly(), 'MFCC_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_rbf(), 'MFCC_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACComplete(), 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACComplete(), 'MFCC_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_Birch(), 'MFCC_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 def runPaaFunctions():
