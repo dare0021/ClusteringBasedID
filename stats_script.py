@@ -5,6 +5,7 @@ from PIL import Image as imaging
 
 inputPath = "/home/jkih/Music/sukwoo/12:33:28.796560/"
 outputPath = inputPath + 'stats/'
+pixelGraphZoom = 5
 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
 PAAFeatureVectors = ['Zero Crossing Rate', 'Energy', 'Entropy of Energy', 'Spectral Centroid', 'Spectral Spread', 'Spectral Entropy', 'Spectral Flux', 'Spectral Rolloff']
@@ -201,6 +202,7 @@ def drawPixelGraph(numList, colorList, filePath):
 	numList.resize(width, height)
 	pxs = np.array([map(numToColor, i) for i in numList], dtype='int8')
 	img = imaging.fromarray(pxs, 'RGB')
+	img = img.resize((width * pixelGraphZoom, height * pixelGraphZoom))
 	img.save(filePath)
 
 def drawPixelGraphs():
