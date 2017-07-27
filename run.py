@@ -18,8 +18,8 @@ num_sets = 3
 # -1 for all
 paaFunction = -1
 # in ms
-windowSize = 50
-timeStep = 25
+windowSize = 300
+timeStep = 100
 
 # don't change unless necessary
 zeroThresh = 1e-10
@@ -252,6 +252,9 @@ def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, tes
 	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 def runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
+	if windowSize >= 300:
+		runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		runModel(model_MiniK(), 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
 	runModel(model_KNN(), 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_linear(), 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
@@ -296,5 +299,5 @@ def runSphinxFiles():
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 		runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
-# runPaaFunctions()
+runPaaFunctions()
 runSphinxFiles()
