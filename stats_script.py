@@ -97,7 +97,7 @@ def saveBySpeaker(f):
 	f.write('Stats by Speaker\n')
 	for speaker in accs.keys():
 		saveAndPrint(f, kvpDisp('Speaker', speaker))
-		saveStats(f, accs[speaker], f1s[speaker], speaker)
+		saveStats(f, accs[speaker], f1s[speaker], 'Speaker_' + speaker)
 		f.write('\n')
 
 def saveByFeature(f):
@@ -112,7 +112,7 @@ def saveByFeature(f):
 	f.write('Stats by Feature\n')
 	for fv in accs.keys():
 		saveAndPrint(f, kvpDisp('Feature', fv))
-		saveStats(f, accs[fv], f1s[fv], fv)
+		saveStats(f, accs[fv], f1s[fv], 'Feature_' + fv)
 		f.write('\n')
 
 def saveByModel(f):
