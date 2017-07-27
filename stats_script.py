@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/12:33:28.796560/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx MFCC Full Set 0726/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -97,7 +97,7 @@ def saveBySpeaker(f):
 	f.write('Stats by Speaker\n')
 	for speaker in accs.keys():
 		saveAndPrint(f, kvpDisp('Speaker', speaker))
-		saveStats(f, accs[speaker], f1s[speaker], inputPath)
+		saveStats(f, accs[speaker], f1s[speaker], speaker)
 		f.write('\n')
 
 def saveByFeature(f):
@@ -112,7 +112,7 @@ def saveByFeature(f):
 	f.write('Stats by Feature\n')
 	for fv in accs.keys():
 		saveAndPrint(f, kvpDisp('Feature', fv))
-		saveStats(f, accs[fv], f1s[fv])
+		saveStats(f, accs[fv], f1s[fv], fv)
 		f.write('\n')
 
 def saveByModel(f):
@@ -143,8 +143,15 @@ def saveStats(f, accuracies, f1s, plotFileNameStub=''):
 	f.write('\n')
 
 	if len(plotFileNameStub) > 0:
-		boxplot(accuracies, plotFileNameStub + '_accuracies.png')
-		boxplot(f1s, plotFileNameStub + '_f1s.png')
+		plt.figure()
+		plt.subplot(121)
+		plt.title(plotFileNameStub + ' acc')
+		plt.boxplot(accuracies)
+		plt.subplot(122)
+		plt.boxplot(f1s)
+		plt.title(plotFileNameStub + ' f1')
+		assert not os.path.isfile(outputPath + plotFileNameStub + '.png')
+		plt.savefig(outputPath + plotFileNameStub + '.png', bbox_inches='tight')
 
 def saveToFile(verbose=0):
 	accuracies = []
@@ -157,7 +164,7 @@ def saveToFile(verbose=0):
 	assert not os.path.isdir(outputPath)
 	os.mkdir(outputPath)
 	f = open(outputPath + "summary.txt", 'w')
-	saveStats(f, accuracies, f1s)
+	saveStats(f, accuracies, f1s, 'summary')
 
 	# by speaker & feature vector
 	if verbose > 0:
@@ -169,19 +176,10 @@ def saveToFile(verbose=0):
 	# copy of each result file minus the raw output
 	if verbose > 1:
 		for result in results:
-			f.write(result)
+			f.write(str(result))
 		f.write("\n")
 
 	f.close()
-
-def boxplot(data, saveFile=''):
-	plt.figure()
-	plt.boxplot(data)
-	# ADD %saveFile% AS TITLE
-	if len(saveFile) > 0:
-		plt.savefig(outputPath + saveFile)
-	else:
-		plt.show()
 
 def textToIntList(txt):
 	decrement = 1
@@ -205,6 +203,7 @@ def drawPixelGraph(numList, colorList, filePath):
 	pxs = np.array([map(numToColor, i) for i in numList], dtype='int8')
 	img = imaging.fromarray(pxs, 'RGB')
 	img = img.resize((width * pixelGraphZoom, height * pixelGraphZoom))
+	assert not os.path.isfile(filePath)
 	img.save(filePath)
 
 def drawPixelGraphs():
@@ -238,6 +237,6 @@ def getComparisonList(predList, trueList):
 				retval[i] = 2
 	return retval
 
-# loadFiles()
-# saveToFile(2)
+loadFiles()
+saveToFile(2)
 drawPixelGraphs()
