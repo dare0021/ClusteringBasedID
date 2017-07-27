@@ -100,6 +100,11 @@ def saveBySpeaker(f):
 		saveStats(f, accs[speaker], f1s[speaker], 'Speaker_' + speaker)
 		f.write('\n')
 
+def getListWithMaxFirstElement(kvp1, kvp2):
+	if kvp1[0] > kvp2[0]:
+		return kvp1
+	return kvp2
+
 def saveByFeature(f):
 	accs = dict()
 	f1s = dict()
@@ -118,10 +123,10 @@ def saveByFeature(f):
 		saveAndPrint(f, kvpDisp('Feature', fv))
 		saveStats(f, accs[fv], f1s[fv], 'Feature_' + fv)
 		f.write('\n')
-		accmax_bymean[0] = max(accmax_bymean[0], np.mean(accs[fv]))
-		accmax_bymed[0] = max(accmax_bymed[0], np.median(accs[fv]))
-		f1max_bymean[0] = max(f1max_bymean[0], np.mean(f1s[fv]))
-		f1max_bymed[0] = max(f1max_bymed[0], np.median(f1s[fv]))
+		accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[fv]), fv))
+		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[fv]), fv))
+		f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (np.mean(f1s[fv]), fv))
+		f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (np.median(f1s[fv]), fv))
 	f.write('\n')
 	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
 	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
@@ -174,6 +179,7 @@ def saveStats(f, accuracies, f1s, plotFileNameStub=''):
 		plt.title(plotFileNameStub + ' f1')
 		assert not os.path.isfile(outputPath + plotFileNameStub + '.png')
 		plt.savefig(outputPath + plotFileNameStub + '.png', bbox_inches='tight')
+		plt.close()
 
 def saveToFile(verbose=0):
 	accuracies = []
