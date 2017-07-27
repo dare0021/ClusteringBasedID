@@ -143,14 +143,21 @@ def saveStats(f, accuracies, f1s, plotFileNameStub=''):
 	f.write('\n')
 
 	if len(plotFileNameStub) > 0:
+		strlen = 7
 		plt.figure()
 		plt.subplot(121)
 		plt.ylim([0,1])
 		plt.title(plotFileNameStub + ' acc')
 		plt.boxplot(accuracies)
+		plt.text(.55,.95,'mean & median')
+		plt.text(.55,.9, str(np.mean(accuracies))[:strlen])
+		plt.text(.55,.85,str(np.median(accuracies))[:strlen])
 		plt.subplot(122)
 		plt.ylim([0,1])
 		plt.boxplot(f1s)
+		plt.text(.55,.95,'mean & median')
+		plt.text(.55,.9, str(np.mean(f1s))[:strlen])
+		plt.text(.55,.85,str(np.median(f1s))[:strlen])
 		plt.title(plotFileNameStub + ' f1')
 		assert not os.path.isfile(outputPath + plotFileNameStub + '.png')
 		plt.savefig(outputPath + plotFileNameStub + '.png', bbox_inches='tight')
