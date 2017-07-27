@@ -145,9 +145,11 @@ def saveStats(f, accuracies, f1s, plotFileNameStub=''):
 	if len(plotFileNameStub) > 0:
 		plt.figure()
 		plt.subplot(121)
+		plt.ylim([0,1])
 		plt.title(plotFileNameStub + ' acc')
 		plt.boxplot(accuracies)
 		plt.subplot(122)
+		plt.ylim([0,1])
 		plt.boxplot(f1s)
 		plt.title(plotFileNameStub + ' f1')
 		assert not os.path.isfile(outputPath + plotFileNameStub + '.png')
