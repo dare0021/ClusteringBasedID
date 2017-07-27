@@ -182,6 +182,7 @@ def saveByCombination(f):
 		for fv in accs[md].keys():
 			saveAndPrint(f, kvpDisp('Model', md))
 			saveAndPrint(f, kvpDisp('Feature', fv))
+			saveStats(f, accs[md][fv], f1s[md][fv], 'Comb_'+md + ' + ' +fv)
 			f.write('\n')
 		accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[md][fv]), md + ' + ' + fv))
 		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md][fv]), md + ' + ' + fv))
