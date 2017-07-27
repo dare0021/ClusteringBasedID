@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/PAA Full Set 0725 ish/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx MFCC Full Set 0726/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -142,11 +142,23 @@ def saveByModel(f):
 		smartAppend(accs, md, result.accuracy)
 		smartAppend(f1s, md, result.f1)
 
+	accmax_bymean = [0,accs.keys()[0]]
+	accmax_bymed = [0,accs.keys()[0]]
+	f1max_bymean = [0,accs.keys()[0]]
+	f1max_bymed = [0,accs.keys()[0]]
 	f.write('Stats by Model\n')
 	for md in accs.keys():
 		saveAndPrint(f, kvpDisp('Model', md))
-		saveStats(f, accs[md], f1s[md])
+		saveStats(f, accs[md], f1s[md], 'Model_'+md)
 		f.write('\n')
+		accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[md]), md))
+		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md]), md))
+		f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (np.mean(f1s[md]), md))
+		f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (np.median(f1s[md]), md))
+	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
+	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
+	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
+	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
 def saveStats(f, accuracies, f1s, plotFileNameStub=''):
 	saveAndPrint(f, kvpDisp('Accuracy mean', np.mean(accuracies)))
@@ -200,6 +212,8 @@ def saveToFile(verbose=0):
 		f.write("\n")
 		saveByFeature(f)
 		f.write("\n")
+		saveByModel(f)
+		f.write('\n')
 
 	# copy of each result file minus the raw output
 	if verbose > 1:
