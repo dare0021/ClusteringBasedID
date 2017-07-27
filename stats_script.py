@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx MFCC Full Set 0726/"
+inputPath = "/home/jkih/Music/sukwoo/PAA Full Set 0725 ish/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -109,11 +109,24 @@ def saveByFeature(f):
 		smartAppend(accs, fv, result.accuracy)
 		smartAppend(f1s, fv, result.f1)
 
+	accmax_bymean = [0,accs.keys()[0]]
+	accmax_bymed = [0,accs.keys()[0]]
+	f1max_bymean = [0,accs.keys()[0]]
+	f1max_bymed = [0,accs.keys()[0]]
 	f.write('Stats by Feature\n')
 	for fv in accs.keys():
 		saveAndPrint(f, kvpDisp('Feature', fv))
 		saveStats(f, accs[fv], f1s[fv], 'Feature_' + fv)
 		f.write('\n')
+		accmax_bymean[0] = max(accmax_bymean[0], np.mean(accs[fv]))
+		accmax_bymed[0] = max(accmax_bymed[0], np.median(accs[fv]))
+		f1max_bymean[0] = max(f1max_bymean[0], np.mean(f1s[fv]))
+		f1max_bymed[0] = max(f1max_bymed[0], np.median(f1s[fv]))
+	f.write('\n')
+	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
+	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
+	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
+	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
 def saveByModel(f):
 	accs = dict()
