@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx MFCC Full Set 0726/"
+inputPath = "/home/jkih/Music/sukwoo/PAA Full Set 0725 ish/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -114,10 +114,10 @@ def saveByFeature(f):
 		smartAppend(accs, fv, result.accuracy)
 		smartAppend(f1s, fv, result.f1)
 
-	accmax_bymean = [0,accs.keys()[0]]
-	accmax_bymed = [0,accs.keys()[0]]
-	f1max_bymean = [0,accs.keys()[0]]
-	f1max_bymed = [0,accs.keys()[0]]
+	accmax_bymean = [-1,'Null']
+	accmax_bymed = [-1,'Null']
+	f1max_bymean = [-1,'Null']
+	f1max_bymed = [-1,'Null']
 	f.write('Stats by Feature\n')
 	for fv in accs.keys():
 		saveAndPrint(f, kvpDisp('Feature', fv))
@@ -142,10 +142,10 @@ def saveByModel(f):
 		smartAppend(accs, md, result.accuracy)
 		smartAppend(f1s, md, result.f1)
 
-	accmax_bymean = [0,accs.keys()[0]]
-	accmax_bymed = [0,accs.keys()[0]]
-	f1max_bymean = [0,accs.keys()[0]]
-	f1max_bymed = [0,accs.keys()[0]]
+	accmax_bymean = [-1,'Null']
+	accmax_bymed = [-1,'Null']
+	f1max_bymean = [-1,'Null']
+	f1max_bymed = [-1,'Null']
 	f.write('Stats by Model\n')
 	for md in accs.keys():
 		saveAndPrint(f, kvpDisp('Model', md))
@@ -155,6 +155,38 @@ def saveByModel(f):
 		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md]), md))
 		f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (np.mean(f1s[md]), md))
 		f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (np.median(f1s[md]), md))
+	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
+	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
+	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
+	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
+
+def saveByCombination(f):
+	# Are nested dicts a good idea? Who knows? 
+	accs = dict()
+	f1s = dict()
+
+	for result in results:
+		md = result.algorithm
+		fv = result.feature
+		if not (md in accs.keys()):
+			accs[md] = dict()
+			f1s[md] = dict()
+		smartAppend(accs[md], fv, result.accuracy)
+		smartAppend(f1s[md], fv, result.f1)
+
+	accmax_bymean = [-1,'Null']
+	accmax_bymed = [-1,'Null']
+	f1max_bymean = [-1,'Null']
+	f1max_bymed = [-1,'Null']
+	for md in accs.keys():
+		for fv in accs[md].keys():
+			saveAndPrint(f, kvpDisp('Model', md))
+			saveAndPrint(f, kvpDisp('Feature', fv))
+			f.write('\n')
+		accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[md][fv]), md + ' + ' + fv))
+		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md][fv]), md + ' + ' + fv))
+		f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (np.mean(f1s[md][fv]), md + ' + ' + fv))
+		f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (np.median(f1s[md][fv]), md + ' + ' + fv))
 	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
 	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
@@ -206,7 +238,7 @@ def saveToFile(verbose=0):
 	f = open(outputPath + "summary.txt", 'w')
 	saveStats(f, accuracies, f1s, 'summary')
 
-	# by speaker & feature vector
+	# by broad categories
 	if verbose > 0:
 		saveBySpeaker(f)
 		f.write("\n")
@@ -215,8 +247,13 @@ def saveToFile(verbose=0):
 		saveByModel(f)
 		f.write('\n')
 
-	# copy of each result file minus the raw output
+	# by specific combinations of feature vector & model
 	if verbose > 1:
+		saveByCombination(f)
+		f.write('\n')
+
+	# copy of each result file minus the raw output
+	if verbose > 2:
 		for result in results:
 			f.write(str(result))
 		f.write("\n")
