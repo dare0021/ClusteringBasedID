@@ -73,11 +73,11 @@ def loadFiles():
 			featureVector = PAAFeatureVectors[getFeatureNum(fileName)]
 		accuracy = float(s[10:s.find('\t')])
 		f1 = float(s[s.find('f1: ')+4:])
-		if not (accuracy >= 0 and accuracy <= 1):
+		if accuracy < 0 and accuracy > 1:
 			print 'INVALID ACC @ ' + filePath
 			print accuracy
 			os.exit
-		elif not (f1 >= 0 and f1 <= 1):
+		elif f1 < 0 and f1 > 1:
 			print 'INVALID F1 @ ' + filePath
 			print f1
 			os.exit
