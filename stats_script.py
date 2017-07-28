@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx MFCC Full Set 0726/"
+inputPath = "/home/jkih/Music/sukwoo/PAA FULL 300 100 0728/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -184,10 +184,10 @@ def saveByCombination(f):
 			saveAndPrint(f, kvpDisp('Feature', fv))
 			saveStats(f, accs[md][fv], f1s[md][fv], 'Comb_'+md + ' + ' +fv)
 			f.write('\n')
-		accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[md][fv]), md + ' + ' + fv))
-		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md][fv]), md + ' + ' + fv))
-		f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (np.mean(f1s[md][fv]), md + ' + ' + fv))
-		f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (np.median(f1s[md][fv]), md + ' + ' + fv))
+			accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[md][fv]), md + ' + ' + fv))
+			accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md][fv]), md + ' + ' + fv))
+			f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (np.mean(f1s[md][fv]), md + ' + ' + fv))
+			f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (np.median(f1s[md][fv]), md + ' + ' + fv))
 	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
 	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
