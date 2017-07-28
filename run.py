@@ -211,11 +211,17 @@ def model_Birch():
 	print 'Running Birch'
 	return sklearn.cluster.Birch(n_clusters=sinfo.getNbClasses())
 
-def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
+def runModel(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
+	model = modelFunc()
 	model.fit(trainFeatureVector, trainTruthVector)
 	accuracy = -1
 	f1 = -1
 	try:
+		if type(model) is type(model_MiniK()):
+			model = modelFunc()
+			model.dummyattributethatdoesntexist
+			# MiniK score is not accuracy
+			# raise an attribute error to skip in to the hand-written accuracy code
 		predicted_labels = model.predict(testFeatureVector)
 		accuracy = model.score(testFeatureVector, testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
@@ -225,6 +231,18 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
 		recall = recallCalc(predicted_labels, testTruthVector)
 		f1 = float(2) * accuracy * recall / (accuracy + recall)
+	if accuracy < 0 or accuracy > 1:
+		print 'INVALID ACC ' + str(accuracy)
+		print 'MODEL ' + str(model)
+		print str(predicted_labels)
+		print str(testTruthVector)
+		os.exit
+	elif f1 < 0 or f1 > 1:
+		print 'INVALID F1 ' + str(f1)
+		print 'MODEL ' + str(model)
+		print str(predicted_labels)
+		print str(testTruthVector)
+		os.exit
 
 	f = open(outputPath + tag + '.log', 'w')
 	f.write('accuracy: ' + str(accuracy) + '\tf1: ' + str(f1))
@@ -239,36 +257,36 @@ def runModel(model, tag, trainFeatureVector, testFeatureVector, trainTruthVector
 	return accuracy, f1
 
 def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	runModel(model_KNN(), 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_RNC(), 'PAA_' + str(paaFunction) + '_RNC_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear(), 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf(), 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_MiniK(), 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACWard(), 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACAverage(), 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACComplete(), 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_RNC, 'PAA_' + str(paaFunction) + '_RNC_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_linear, 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_poly, 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_rbf, 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Spectral, 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_MiniK, 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACWard, 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACAverage, 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Birch, 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 def runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	if windowSize >= 300:
-		runModel(model_Spectral(), 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-		runModel(model_MiniK(), 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
-	runModel(model_KNN(), 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear(), 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly(), 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf(), 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACWard(), 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACAverage(), 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACComplete(), 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Birch(), 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		runModel(model_Spectral, 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		runModel(model_MiniK, 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
+	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_linear, 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_poly, 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_rbf, 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACWard, 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACAverage, 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_Birch, 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
 def runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	runModel(model_KNN(), 'MFCC_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear(), 'MFCC_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly(), 'MFCC_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf(), 'MFCC_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_KNN, 'MFCC_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_linear, 'MFCC_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_poly, 'MFCC_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+	runModel(model_SVM_rbf, 'MFCC_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	
 def runPaaFunctions():
 	global paaFunction
