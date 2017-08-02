@@ -281,7 +281,8 @@ def runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, 
 	if windowSize >= 50:
 		runModel(model_ACWard, 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 		runModel(model_ACAverage, 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-		runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
+	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_linear, 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_poly, 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 	runModel(model_SVM_rbf, 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
