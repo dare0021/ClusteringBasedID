@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Both FULL 50 25 0802 ish/"
+inputPath = "/home/jkih/Music/sukwoo/Both FULL 300 100 0729/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -181,15 +181,6 @@ def saveByCombination(f):
 			f1s[md] = dict()
 		smartAppend(accs[md], fv, result.accuracy)
 		smartAppend(f1s[md], fv, result.f1)
-
-	skipFunction = True
-	for md in accs.keys():
-		if len(accs[md].keys()) > 1:
-			skipFunction = False
-			break
-	if skipFunction:
-		saveAndPrint(f, "saveByCombination() unnecessary")
-		return
 
 	accmax_bymean = [-1,'Null']
 	accmax_bymed = [-1,'Null']
