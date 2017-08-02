@@ -18,8 +18,8 @@ num_sets = 3
 # -1 for all
 paaFunction = -1
 # in ms
-windowSize = 300
-timeStep = 100
+windowSize = 50
+timeStep = 25
 
 # don't change unless necessary
 zeroThresh = 1e-10
@@ -323,5 +323,5 @@ def runSphinxFiles():
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 		runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
 
-runPaaFunctions()
+# runPaaFunctions()
 runSphinxFiles()
