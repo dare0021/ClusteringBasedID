@@ -6,14 +6,14 @@ from pyAudioAnalysis import audioBasicIO, audioFeatureExtraction
 from datetime import datetime
 import sklearn 
 from sklearn import neighbors, svm, cluster
-from multiprocessing import Process, BoundedSemaphore
+from threading import Thread, BoundedSemaphore
 
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo/"
 outputPath = inputPath + str(datetime.now().time()) + '/'
 num_sets = 3
-num_processes_sema = BoundedSemaphore(value=4)
+num_threads_sema = BoundedSemaphore(value=4)
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -218,13 +218,13 @@ def model_Birch():
 	return sklearn.cluster.Birch(n_clusters=sinfo.getNbClasses())
 
 def runModel(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	global num_processes_sema
-	num_processes_sema.acquire()
-	p = Process(target=modelProcess, args=(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector))
+	global num_threads_sema
+	num_threads_sema.acquire()
+	p = Thread(target=modelProcess, args=(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector))
 	p.start()
 
 def modelProcess(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	global num_processes_sema
+	global num_threads_sema
 
 	model = modelFunc()
 	model.fit(trainFeatureVector, trainTruthVector)
@@ -267,7 +267,7 @@ def modelProcess(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTru
 	f.write('\n')
 	f.write(str(testTruthVector))
 	f.close()
-	num_processes_sema.release()
+	num_threads_sema.release()
 
 def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
