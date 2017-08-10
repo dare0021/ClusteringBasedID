@@ -27,8 +27,8 @@ featureVectorSize = 13
 
 # no touch
 featureVectors = dict()
-# caching is untested and might lead to increased OOM rates
 featureVectorCache = dict()
+MfccCache = dict()
 groundTruths = dict()
 lastSpeaker = -1
 
@@ -98,9 +98,14 @@ def storeFeature(sid, data, filePath):
 
 def loadMFCCFiles(inputPath):	
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.mfc')]
-	for filePath in filePaths:
+	for filePath in filePaths:		
 		sid = sinfo.getSpeakerID(filePath)
-		data = unmfc(filePath, featureVectorSize)
+		data = None
+		if filePath in MfccCache.keys():
+			data = MfccCache[filePath]
+		else:
+			data = unmfc(filePath, featureVectorSize)
+			MfccCache[filePath] = data
 		storeFeature(sid, data, filePath)
 
 def loadWAVwithPAA(inputPath, paaFunction):
@@ -248,9 +253,9 @@ def runRBFvariants():
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
-		mds.runRBFvariants(ms)
+		mds.runRBFvariants(ms, 0.3, 0.7, 0.1)
 
 mds.init(num_threads_sema, modelProcess)
-runPaaFunctions()
+# runPaaFunctions()
 # runSphinxFiles()
-# runRBFvariants()
+runRBFvariants()

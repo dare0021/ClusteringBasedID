@@ -2,6 +2,7 @@
 
 from threading import Thread, BoundedSemaphore
 import sklearn 
+import numpy as np
 from sklearn import neighbors, svm, cluster
 import speakerInfo as sinfo
 num_threads_sema = None
@@ -133,7 +134,11 @@ def runAllModelsMFCC(ms):
 	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_' + str(ms.i) + '_' + ms.speakerName, ms)
 	runModel(model_SVM_sigmoid, 'PAA_' + str(ms.paaFunction) + '_SVM_Sigmoid_' + str(ms.i) + '_' + ms.speakerName, ms)
 
-def runRBFvariants(ms):
+def runRBFvariants(ms, gammaMin, gammaMax, gammaStep):
 	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_Base_' + str(ms.i) + '_' + ms.speakerName, ms)
-	ms.args = factory_SVM_rbf()
-	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_Base_' + str(ms.i) + '_' + ms.speakerName, ms)
+	for heuristicsOn in [True, False]:
+		print 'heuristics', heuristicsOn
+		for gamma in np.arange(gammaMin, gammaMax, gammaStep):
+			print 'gamma', gamma
+			ms.args = factory_SVM_rbf(gamma, heuristicsOn)
+			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
