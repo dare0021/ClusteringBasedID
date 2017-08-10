@@ -6,7 +6,26 @@ from sklearn import neighbors, svm, cluster
 import speakerInfo as sinfo
 num_threads_sema = None
 threadFunction = None
-paaFunction = -1
+
+class ModelSettings:
+	i = -1
+	paaFunction = -1
+	trainFeatureVector = []
+	testFeatureVector = []
+	trainTruthVector = []
+	testTruthVector = []
+	speakerName = ''
+	args = None
+
+	def __init__(self, i, paaFunction, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, speakerName, args=None):
+		self.i = i
+		self.paaFunction = paaFunction
+		self.trainFeatureVector = trainFeatureVector
+		self.testFeatureVector = testFeatureVector
+		self.trainTruthVector = trainTruthVector
+		self.testTruthVector = testTruthVector
+		self.speakerName = speakerName
+		self.args = args
 
 def init(num_threads_sema_input, functionToRun):
 	global num_threads_sema
@@ -14,10 +33,10 @@ def init(num_threads_sema_input, functionToRun):
 	num_threads_sema = num_threads_sema_input
 	threadFunction = functionToRun
 
-def runModel(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
+def runModel(modelFunc, tag, ms):
 	global num_threads_sema
 	num_threads_sema.acquire()
-	p = Thread(target=threadFunction, args=(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector))
+	p = Thread(target=threadFunction, args=(modelFunc, tag, ms))
 	p.start()
 
 def model_KNN():
@@ -37,10 +56,13 @@ def model_SVM_poly():
 	print 'Running SVM Poly'
 	return sklearn.svm.SVC(kernel='poly')
 
+def factory_SVM_rbf(gamma=1.0/sinfo.getNbClasses(), shrinking=True, tol=1e-3):
+	return (gamma, shrinking, tol)
+
 # Radial Basis Function
-def model_SVM_rbf():
+def model_SVM_rbf(args = factory_SVM_rbf()):
 	print 'Running SVM RBF'
-	return sklearn.svm.SVC(kernel='rbf')
+	return sklearn.svm.SVC(kernel='rbf', gamma=args[0], shrinking=args[1], tol=args[2])
 
 def model_SVM_sigmoid():
 	print 'Running SVM Sigmoid'
@@ -75,38 +97,43 @@ def model_Birch():
 	print 'Running Birch'
 	return sklearn.cluster.Birch(n_clusters=sinfo.getNbClasses())
 
-def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, paaFunctionName):
-	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_RNC, 'PAA_' + str(paaFunction) + '_RNC_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear, 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly, 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf, 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_sigmoid, 'PAA_' + str(paaFunction) + '_SVM_Sigmoid_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Spectral, 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_MiniK, 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACWard, 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACAverage, 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Birch, 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+def runAllModels(ms):
+	runModel(model_KNN, 'PAA_' + str(ms.paaFunction) + '_KNN_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_RNC, 'PAA_' + str(ms.paaFunction) + '_RNC_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_linear, 'PAA_' + str(ms.paaFunction) + '_SVM_Linear_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_poly, 'PAA_' + str(ms.paaFunction) + '_SVM_Poly_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_rbf, 'PAA_' + str(ms.paaFunction) + '_SVM_RBF_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_sigmoid, 'PAA_' + str(ms.paaFunction) + '_SVM_Sigmoid_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_Spectral, 'PAA_' + str(ms.paaFunction) + '_SpectralClustering_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_MiniK, 'PAA_' + str(ms.paaFunction) + '_MiniK_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_ACWard, 'PAA_' + str(ms.paaFunction) + '_ACWard_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_ACAverage, 'PAA_' + str(ms.paaFunction) + '_ACAvg_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_ACComplete, 'PAA_' + str(ms.paaFunction) + '_ACComplete_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_Birch, 'PAA_' + str(ms.paaFunction) + '_Birch_' + str(ms.i) + '_' + ms.speakerName, ms)
 
-def runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, windowSize, paaFunctionName):
+def runAllModelsPAA(ms, windowSize):
 	if windowSize >= 300:
-		runModel(model_Spectral, 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-		runModel(model_MiniK, 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
+		runModel(model_Spectral, 'PAA_' + str(ms.paaFunction) + '_SpectralClustering_' + str(ms.i) + '_' + ms.speakerName, ms)
+		runModel(model_MiniK, 'PAA_' + str(ms.paaFunction) + '_MiniK_' + str(ms.i) + '_' + ms.speakerName, ms)	
 	if windowSize >= 50:
-		runModel(model_ACWard, 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-		runModel(model_ACAverage, 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-		runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
-	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear, 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly, 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf, 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_sigmoid, 'PAA_' + str(paaFunction) + '_SVM_Sigmoid_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Birch, 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		runModel(model_ACWard, 'PAA_' + str(ms.paaFunction) + '_ACWard_' + str(ms.i) + '_' + ms.speakerName, ms)
+		runModel(model_ACAverage, 'PAA_' + str(ms.paaFunction) + '_ACAvg_' + str(ms.i) + '_' + ms.speakerName, ms)
+		runModel(model_ACComplete, 'PAA_' + str(ms.paaFunction) + '_ACComplete_' + str(ms.i) + '_' + ms.speakerName, ms)	
+	runModel(model_KNN, 'PAA_' + str(ms.paaFunction) + '_KNN_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_linear, 'PAA_' + str(ms.paaFunction) + '_SVM_Linear_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_poly, 'PAA_' + str(ms.paaFunction) + '_SVM_Poly_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_rbf, 'PAA_' + str(ms.paaFunction) + '_SVM_RBF_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_sigmoid, 'PAA_' + str(ms.paaFunction) + '_SVM_Sigmoid_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_Birch, 'PAA_' + str(ms.paaFunction) + '_Birch_' + str(ms.i) + '_' + ms.speakerName, ms)
 
-def runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, paaFunctionName):
-	runModel(model_KNN, 'MFCC_' + str(paaFunction) + '_KNN_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear, 'MFCC_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly, 'MFCC_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf, 'MFCC_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_sigmoid, 'PAA_' + str(paaFunction) + '_SVM_Sigmoid_' + str(i) + '_' + paaFunctionName, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+def runAllModelsMFCC(ms):
+	runModel(model_KNN, 'MFCC_' + str(ms.paaFunction) + '_KNN_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_linear, 'MFCC_' + str(ms.paaFunction) + '_SVM_Linear_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_poly, 'MFCC_' + str(ms.paaFunction) + '_SVM_Poly_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_' + str(ms.i) + '_' + ms.speakerName, ms)
+	runModel(model_SVM_sigmoid, 'PAA_' + str(ms.paaFunction) + '_SVM_Sigmoid_' + str(ms.i) + '_' + ms.speakerName, ms)
+
+def runRBFvariants(ms):
+	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_Base_' + str(ms.i) + '_' + ms.speakerName, ms)
+	ms.args = factory_SVM_rbf()
+	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_Base_' + str(ms.i) + '_' + ms.speakerName, ms)

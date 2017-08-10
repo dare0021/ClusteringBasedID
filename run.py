@@ -104,7 +104,6 @@ def loadMFCCFiles(inputPath):
 		storeFeature(sid, data, filePath)
 
 def loadWAVwithPAA(inputPath, paaFunction):
-	mds.paaFunction = paaFunction
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.wav')]
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
@@ -161,16 +160,24 @@ def getSubset():
 	print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
 
-def modelProcess(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
+def modelProcess(modelFunc, tag, ms):
 	global num_threads_sema
-
-	model = modelFunc()
+	def resetModel():
+		if ms.args != None:
+			return modelFunc(ms.args)
+		else:
+			return modelFunc()
+	trainFeatureVector = ms.trainFeatureVector
+	trainTruthVector = ms.trainTruthVector
+	testFeatureVector = ms.testFeatureVector
+	testTruthVector = ms.testTruthVector
+	model = resetModel()
 	model.fit(trainFeatureVector, trainTruthVector)
 	accuracy = -1
 	f1 = -1
 	try:
 		if modelFunc == mds.model_MiniK:
-			model = modelFunc()
+			model = resetModel()
 			model.dummyattributethatdoesntexist
 			# MiniK score is not accuracy
 			# raise an attribute error to skip in to the hand-written accuracy code
@@ -216,7 +223,8 @@ def runPaaFunctions():
 		loadFeatureVector(inputPath, 'paa', paaFunction)
 		for i in range(num_sets * len(featureVectors.keys())):
 			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-			mds.runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, windowSize, featureVectors.keys()[lastSpeaker])
+			ms = mds.ModelSettings(i, paaFunction, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
+			mds.runAllModelsPAA(ms, windowSize)
 
 def runSphinxFiles():
 	if not os.path.exists(outputPath):
@@ -227,8 +235,22 @@ def runSphinxFiles():
 	for i in range(iterlen):
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-		mds.runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
+		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
+		mds.runAllModelsMFCC(ms)
+
+def runRBFvariants():
+	if not os.path.exists(outputPath):
+		os.mkdir(outputPath)
+	clearVariables()
+	loadFeatureVector(inputPath, 'mfcc')
+	iterlen = num_sets * len(featureVectors.keys())
+	for i in range(iterlen):
+		print "PROCESSING: " + str(i) + " / " + str(iterlen)
+		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
+		mds.runRBFvariants(ms)
 
 mds.init(num_threads_sema, modelProcess)
 runPaaFunctions()
 # runSphinxFiles()
+# runRBFvariants()
