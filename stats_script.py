@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Both FULL 300 100 0729/"
+inputPath = "/home/jkih/Music/sukwoo/PAA FULL 25.x 10 0809/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 

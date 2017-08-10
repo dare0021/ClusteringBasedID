@@ -5,8 +5,8 @@ from unpackMFC import run as unmfc
 from pyAudioAnalysis import audioBasicIO, audioFeatureExtraction
 from datetime import datetime
 import sklearn 
-from sklearn import neighbors, svm, cluster
 from threading import Thread, BoundedSemaphore
+import modelStorage as mds
 
 
 # primary inputs
@@ -17,8 +17,6 @@ num_threads_sema = BoundedSemaphore(value=4)
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
-# -1 for all
-paaFunction = -1
 # in ms
 windowSize = 25.625
 timeStep = 10
@@ -76,11 +74,11 @@ def validateNormalization(featureVector):
 			return False
 	return True
 
-def loadFeatureVector(inputPath, featureType):
+def loadFeatureVector(inputPath, featureType, paaFunction = -1):
 	if featureType == 'mfcc':
 		loadMFCCFiles(inputPath)
 	elif featureType == 'paa':
-		loadWAVwithPAA(inputPath)
+		loadWAVwithPAA(inputPath, paaFunction)
 	else:
 		print "ERR: unknown feature type", featureType
 		assert False
@@ -105,7 +103,8 @@ def loadMFCCFiles(inputPath):
 		data = unmfc(filePath, featureVectorSize)
 		storeFeature(sid, data, filePath)
 
-def loadWAVwithPAA(inputPath):
+def loadWAVwithPAA(inputPath, paaFunction):
+	mds.paaFunction = paaFunction
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.wav')]
 	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
@@ -162,67 +161,6 @@ def getSubset():
 	print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
 
-def model_KNN():
-	print 'Running KNN'
-	return sklearn.neighbors.KNeighborsClassifier(n_neighbors=sinfo.getNbClasses())
-
-# data set too small
-def model_RNC():
-	print 'Running RNC'
-	return sklearn.neighbors.RadiusNeighborsClassifier()
-
-def model_SVM_linear():
-	print 'Running SVM Linear'
-	return sklearn.svm.SVC(kernel='linear')
-
-def model_SVM_poly():
-	print 'Running SVM Poly'
-	return sklearn.svm.SVC(kernel='poly')
-
-# Radial Basis Function
-def model_SVM_rbf():
-	print 'Running SVM RBF'
-	return sklearn.svm.SVC(kernel='rbf')
-
-def model_SVM_sigmoid():
-	print 'Running SVM Sigmoid'
-	return sklearn.svm.SVC(kernel='sigmoid')
-
-# not enough memory
-def model_Spectral():
-	print 'Running Spectral Clustering'
-	return sklearn.cluster.SpectralClustering(n_clusters=sinfo.getNbClasses())
-
-# not enough memory
-def model_MiniK():
-	print 'Running Mini K'
-	return sklearn.cluster.MiniBatchKMeans(n_clusters=sinfo.getNbClasses())
-
-def model_ACWard():
-	print 'Running AC Ward'
-	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='ward')
-
-def model_ACComplete():
-	print 'Running AC Complete'
-	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='complete')
-
-def model_ACAverage():
-	print 'Running AC Average'
-	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='average')
-
-# clustering class incompatible with classifiers
-# clustering is deterministic, non-ML? Doesn't seem to use training at all.
-# http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
-def model_Birch():
-	print 'Running Birch'
-	return sklearn.cluster.Birch(n_clusters=sinfo.getNbClasses())
-
-def runModel(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	global num_threads_sema
-	num_threads_sema.acquire()
-	p = Thread(target=modelProcess, args=(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector))
-	p.start()
-
 def modelProcess(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
 	global num_threads_sema
 
@@ -231,7 +169,7 @@ def modelProcess(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTru
 	accuracy = -1
 	f1 = -1
 	try:
-		if modelFunc == model_MiniK:
+		if modelFunc == mds.model_MiniK:
 			model = modelFunc()
 			model.dummyattributethatdoesntexist
 			# MiniK score is not accuracy
@@ -268,63 +206,17 @@ def modelProcess(modelFunc, tag, trainFeatureVector, testFeatureVector, trainTru
 	f.write(str(testTruthVector))
 	f.close()
 	num_threads_sema.release()
-
-def runAllModels(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_RNC, 'PAA_' + str(paaFunction) + '_RNC_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear, 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly, 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf, 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_sigmoid, 'PAA_' + str(paaFunction) + '_SVM_Sigmoid_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Spectral, 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_MiniK, 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACWard, 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACAverage, 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_Birch, 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-
-def runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	# if windowSize >= 300:
-	# 	runModel(model_Spectral, 'PAA_' + str(paaFunction) + '_SpectralClustering_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	# 	runModel(model_MiniK, 'PAA_' + str(paaFunction) + '_MiniK_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
-	# if windowSize >= 50:
-	# 	runModel(model_ACWard, 'PAA_' + str(paaFunction) + '_ACWard_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	# 	runModel(model_ACAverage, 'PAA_' + str(paaFunction) + '_ACAvg_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	# 	runModel(model_ACComplete, 'PAA_' + str(paaFunction) + '_ACComplete_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)	
-	# runModel(model_KNN, 'PAA_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear, 'PAA_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly, 'PAA_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf, 'PAA_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	# runModel(model_SVM_sigmoid, 'PAA_' + str(paaFunction) + '_SVM_Sigmoid_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	# runModel(model_Birch, 'PAA_' + str(paaFunction) + '_Birch_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-
-def runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector):
-	runModel(model_KNN, 'MFCC_' + str(paaFunction) + '_KNN_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_linear, 'MFCC_' + str(paaFunction) + '_SVM_Linear_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_poly, 'MFCC_' + str(paaFunction) + '_SVM_Poly_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_rbf, 'MFCC_' + str(paaFunction) + '_SVM_RBF_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	runModel(model_SVM_sigmoid, 'PAA_' + str(paaFunction) + '_SVM_Sigmoid_' + str(i) + '_' + featureVectors.keys()[lastSpeaker], trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	
 	
 def runPaaFunctions():
-	global paaFunction
-
 	if not os.path.exists(outputPath):
 		os.mkdir(outputPath)
-	if paaFunction < 0:
-		for paaFunction in [9, 3, 23, 21, 20]:
-			print "Running feature extraction #" + str(paaFunction)
-			clearVariables()
-			loadFeatureVector(inputPath, 'paa')
-			for i in range(num_sets * len(featureVectors.keys())):
-				trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-				runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
-	else:
+	for paaFunction in [21, 20]:
+		print "Running feature extraction #" + str(paaFunction)
 		clearVariables()
-		loadFeatureVector(inputPath, 'paa')
+		loadFeatureVector(inputPath, 'paa', paaFunction)
 		for i in range(num_sets * len(featureVectors.keys())):
-			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()		
-			runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+			mds.runAllModelsPAA(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, windowSize, featureVectors.keys()[lastSpeaker])
 
 def runSphinxFiles():
 	if not os.path.exists(outputPath):
@@ -335,7 +227,8 @@ def runSphinxFiles():
 	for i in range(iterlen):
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-		runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector)
+		mds.runAllModelsMFCC(i, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
 
+mds.init(num_threads_sema, modelProcess)
 runPaaFunctions()
 # runSphinxFiles()
