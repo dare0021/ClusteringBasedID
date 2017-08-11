@@ -367,6 +367,8 @@ def gammaHeuristicGraph():
 	plt.xlabel('gamma')
 	# plt.ylim([0,1])
 	plt.legend(loc=0)
+	if not os.path.isdir(outputPath):
+		os.mkdir(outputPath)
 	assert not os.path.isfile(outputPath + 'gamma_h.png')
 	plt.savefig(outputPath + 'gamma_h.png', bbox_inches='tight')
 	plt.close()
