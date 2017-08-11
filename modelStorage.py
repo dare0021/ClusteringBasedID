@@ -9,15 +9,6 @@ num_threads_sema = None
 threadFunction = None
 
 class ModelSettings:
-	i = -1
-	paaFunction = -1
-	trainFeatureVector = []
-	testFeatureVector = []
-	trainTruthVector = []
-	testTruthVector = []
-	speakerName = ''
-	args = None
-
 	def __init__(self, i, paaFunction, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, speakerName, args=None):
 		self.i = i
 		self.paaFunction = paaFunction

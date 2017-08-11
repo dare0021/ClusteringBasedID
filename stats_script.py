@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/PAA FULL 25.x 10 0809/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.3 0.7 0.1 0811/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -325,6 +325,19 @@ def getComparisonList(predList, trueList):
 				retval[i] = 2
 	return retval
 
+def gammaHeuristicGraph():
+	class gmResult:
+		def __init__(self, g, h, a1, a2, f1, a2):
+			self.gamma = g
+			self.heuristicsOn = h
+			self.accMean = a1
+			self.accMedian = a2
+			self.f1Mean = f1
+			self.f1Median = f2
+	for result in results:
+
+
 loadFiles()
-saveToFile(2)
-drawPixelGraphs()
+# saveToFile(2)
+# drawPixelGraphs()
+gammaHeuristicGraph()
