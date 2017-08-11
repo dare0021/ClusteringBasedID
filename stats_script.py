@@ -326,16 +326,50 @@ def getComparisonList(predList, trueList):
 	return retval
 
 def gammaHeuristicGraph():
-	class gmResult:
-		def __init__(self, g, h, a1, a2, f1, a2):
-			self.gamma = g
-			self.heuristicsOn = h
-			self.accMean = a1
-			self.accMedian = a2
-			self.f1Mean = f1
-			self.f1Median = f2
+	accs = dict()
+	f1s = dict()
 	for result in results:
-
+		modString = result.algorithm
+		tfval = None
+		gval = -1.0
+		if modString == 'SVM_RBF_Base':
+			tfval = True
+			gval = 0.5
+		else:
+			tfval = modString[modString.rfind('_')+1:] == 'True'
+			if tfval:
+				tfval = 1
+			else:
+				tfval = 0
+			gval = float(modString[modString.rfind('_g_')+3 : modString.rfind('_H_')])
+		if not (gval in accs.keys()):
+			accs[gval] = [[],[]]
+			f1s[gval] = [[],[]]
+		accs[gval][tfval].append(result.accuracy)
+		f1s[gval][tfval].append(result.f1)
+	keys = accs.keys()
+	keys.sort()
+	v1 = []
+	v2 = []
+	v3 = []
+	v4 = []
+	for key in keys:
+		v1.append(np.mean(accs[key][True]))
+		v2.append(np.mean(f1s[key][True]))
+		v3.append(np.median(accs[key][False]))
+		v4.append(np.median(f1s[key][False]))
+	plt.figure()
+	plt.plot(keys, v1, label='H1Amean', color='#FF3030')
+	plt.plot(keys, v2, label='H1Fmean', color='#FF7070')
+	plt.plot(keys, v3, label='H0Amed', color='#3030FF')
+	plt.plot(keys, v4, label='H0Fmed', color='#7070FF')
+	plt.xticks(keys)
+	plt.xlabel('gamma')
+	# plt.ylim([0,1])
+	plt.legend(loc=0)
+	assert not os.path.isfile(outputPath + 'gamma_h.png')
+	plt.savefig(outputPath + 'gamma_h.png', bbox_inches='tight')
+	plt.close()
 
 loadFiles()
 # saveToFile(2)
