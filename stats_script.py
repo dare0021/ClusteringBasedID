@@ -333,8 +333,7 @@ def gammaHeuristicGraph():
 		tfval = None
 		gval = -1.0
 		if modString == 'SVM_RBF_Base':
-			tfval = True
-			gval = 0.5
+			continue
 		else:
 			tfval = modString[modString.rfind('_')+1:] == 'True'
 			if tfval:

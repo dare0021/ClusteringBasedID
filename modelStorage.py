@@ -126,7 +126,6 @@ def runAllModelsMFCC(ms):
 	runModel(model_SVM_sigmoid, 'PAA_' + str(ms.paaFunction) + '_SVM_Sigmoid_' + str(ms.i) + '_' + ms.speakerName, ms)
 
 def runRBFvariants(ms, gammaMin, gammaMax, gammaStep):
-	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_Base_' + str(ms.i) + '_' + ms.speakerName, ms)
 	for heuristicsOn in [True]:
 		print 'heuristics', heuristicsOn
 		for gamma in np.arange(gammaMin, gammaMax, gammaStep):
