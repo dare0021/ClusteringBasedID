@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.3 0.7 0.1 0811/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.1 0.8 0.025 0816/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -356,21 +356,44 @@ def gammaHeuristicGraph():
 	for key in keys:
 		v1.append(np.mean(accs[key][True]))
 		v2.append(np.mean(f1s[key][True]))
-		v3.append(np.median(accs[key][False]))
-		v4.append(np.median(f1s[key][False]))
+		v3.append(np.median(accs[key][True]))
+		v4.append(np.median(f1s[key][True]))
 	plt.figure()
-	plt.plot(keys, v1, label='H1Amean', color='#FF3030')
-	plt.plot(keys, v2, label='H1Fmean', color='#FF7070')
-	plt.plot(keys, v3, label='H0Amed', color='#3030FF')
-	plt.plot(keys, v4, label='H0Fmed', color='#7070FF')
+	plt.plot(keys, v1, label='Amean', color='#FF3030')
+	plt.plot(keys, v2, label='Fmean', color='#FF7070')
+	plt.plot(keys, v3, label='Amed', color='#3030FF')
+	plt.plot(keys, v4, label='Fmed', color='#7070FF')
 	plt.xticks(keys)
 	plt.xlabel('gamma')
 	# plt.ylim([0,1])
 	plt.legend(loc=0)
 	if not os.path.isdir(outputPath):
 		os.mkdir(outputPath)
-	assert not os.path.isfile(outputPath + 'gamma_h.png')
-	plt.savefig(outputPath + 'gamma_h.png', bbox_inches='tight')
+	assert not os.path.isfile(outputPath + 'gamma_h1.png')
+	plt.savefig(outputPath + 'gamma_h1.png', bbox_inches='tight')
+	plt.close()
+	v1 = []
+	v2 = []
+	v3 = []
+	v4 = []
+	for key in keys:
+		v1.append(np.mean(accs[key][False]))
+		v2.append(np.mean(f1s[key][False]))
+		v3.append(np.median(accs[key][False]))
+		v4.append(np.median(f1s[key][False]))
+	plt.figure()
+	plt.plot(keys, v1, label='Amean', color='#FF3030')
+	plt.plot(keys, v2, label='Fmean', color='#FF7070')
+	plt.plot(keys, v3, label='Amed', color='#3030FF')
+	plt.plot(keys, v4, label='Fmed', color='#7070FF')
+	plt.xticks(keys)
+	plt.xlabel('gamma')
+	# plt.ylim([0,1])
+	plt.legend(loc=0)
+	if not os.path.isdir(outputPath):
+		os.mkdir(outputPath)
+	assert not os.path.isfile(outputPath + 'gamma_h0.png')
+	plt.savefig(outputPath + 'gamma_h0.png', bbox_inches='tight')
 	plt.close()
 
 loadFiles()

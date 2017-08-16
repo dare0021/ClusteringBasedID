@@ -253,7 +253,7 @@ def runRBFvariants():
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
-		mds.runRBFvariants(ms, 0.3, 0.7, 0.1)
+		mds.runRBFvariants(ms, 0.01, 0.1, 0.01)
 
 mds.init(num_threads_sema, modelProcess)
 # runPaaFunctions()
