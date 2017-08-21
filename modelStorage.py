@@ -7,6 +7,8 @@ from sklearn import neighbors, svm, cluster
 import speakerInfo as sinfo
 num_threads_sema = None
 threadFunction = None
+# default 200, in MB
+ram_usage = 1024
 
 class ModelSettings:
 	def __init__(self, i, paaFunction, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, speakerName, args=None):
@@ -42,11 +44,11 @@ def model_RNC():
 
 def model_SVM_linear():
 	print 'Running SVM Linear'
-	return sklearn.svm.SVC(kernel='linear')
+	return sklearn.svm.SVC(kernel='linear', cache_size=ram_usage)
 
 def model_SVM_poly():
 	print 'Running SVM Poly'
-	return sklearn.svm.SVC(kernel='poly')
+	return sklearn.svm.SVC(kernel='poly', cache_size=ram_usage)
 
 def factory_SVM_rbf(gamma=1.0/sinfo.getNbClasses(), shrinking=True, tol=1e-3, c=1):
 	return (gamma, shrinking, tol, c)
@@ -54,11 +56,11 @@ def factory_SVM_rbf(gamma=1.0/sinfo.getNbClasses(), shrinking=True, tol=1e-3, c=
 # Radial Basis Function
 def model_SVM_rbf(args = factory_SVM_rbf()):
 	print 'Running SVM RBF'
-	return sklearn.svm.SVC(kernel='rbf', gamma=args[0], shrinking=args[1], tol=args[2], C=args[3])
+	return sklearn.svm.SVC(kernel='rbf', gamma=args[0], shrinking=args[1], tol=args[2], C=args[3], cache_size=ram_usage)
 
 def model_SVM_sigmoid():
 	print 'Running SVM Sigmoid'
-	return sklearn.svm.SVC(kernel='sigmoid')
+	return sklearn.svm.SVC(kernel='sigmoid', cache_size=ram_usage)
 
 # not enough memory
 def model_Spectral():
