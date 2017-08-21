@@ -48,13 +48,13 @@ def model_SVM_poly():
 	print 'Running SVM Poly'
 	return sklearn.svm.SVC(kernel='poly')
 
-def factory_SVM_rbf(gamma=1.0/sinfo.getNbClasses(), shrinking=True, tol=1e-3):
-	return (gamma, shrinking, tol)
+def factory_SVM_rbf(gamma=1.0/sinfo.getNbClasses(), shrinking=True, tol=1e-3, c=1):
+	return (gamma, shrinking, tol, c)
 
 # Radial Basis Function
 def model_SVM_rbf(args = factory_SVM_rbf()):
 	print 'Running SVM RBF'
-	return sklearn.svm.SVC(kernel='rbf', gamma=args[0], shrinking=args[1], tol=args[2])
+	return sklearn.svm.SVC(kernel='rbf', gamma=args[0], shrinking=args[1], tol=args[2], C=args[3])
 
 def model_SVM_sigmoid():
 	print 'Running SVM Sigmoid'
@@ -125,10 +125,19 @@ def runAllModelsMFCC(ms):
 	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_' + str(ms.i) + '_' + ms.speakerName, ms)
 	runModel(model_SVM_sigmoid, 'PAA_' + str(ms.paaFunction) + '_SVM_Sigmoid_' + str(ms.i) + '_' + ms.speakerName, ms)
 
-def runRBFvariants(ms, gammaMin, gammaMax, gammaStep):
+def runRBFvariantsGamma(ms, gammaMin, gammaMax, gammaStep):
 	for heuristicsOn in [True]:
 		print 'heuristics', heuristicsOn
 		for gamma in np.arange(gammaMin, gammaMax, gammaStep):
 			print 'gamma', gamma
 			ms.args = factory_SVM_rbf(gamma, heuristicsOn)
 			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+
+def runRBFvariants2DList(ms, cList, gammaList):
+	for heuristicsOn in [True]:
+		print 'heuristics', heuristicsOn
+		for c in cList:
+			for gamma in gammaList:
+				print 'c', c, 'g', gamma
+				ms.args = factory_SVM_rbf(gamma, heuristicsOn, c)
+				runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
