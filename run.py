@@ -10,7 +10,10 @@ import modelStorage as mds
 
 
 # primary inputs
-inputPath = "/home/jkih/Music/sukwoo/"
+inputPath = "/home/jkih/Music/sukwoo_j/"
+manualTrainTestSet = True
+trainLabels = ["joo"]
+testLabels = ['kim', 'lee', 'seo', 'yoon']
 outputPath = inputPath + str(datetime.now().time()) + '/'
 num_sets = 3
 num_threads_sema = BoundedSemaphore(value=4)
@@ -96,7 +99,7 @@ def storeFeature(sid, data, filePath):
 		featureVectors[sid] = [data]
 		groundTruths[sid] = [np.full(len(data), sinfo.getTruthValue(filePath), dtype='int8').tolist()]
 
-def loadMFCCFiles(inputPath):	
+def loadMFCCFiles(inputPath):
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.mfc')]
 	for filePath in filePaths:		
 		sid = sinfo.getSpeakerID(filePath)
@@ -152,17 +155,20 @@ def collateData(speakerList):
 	return x, y
 
 def getSubset():
-	global lastSpeaker
+	if manualTrainTestSet:
+		testFeatureVector, testTruthVector = collateData(testLabels)
+		trainFeatureVector, trainTruthVector = collateData(trainLabels)
+	else:
+		global lastSpeaker
+		testSpeaker = lastSpeaker + 1
+		if testSpeaker >= len(featureVectors.keys()):
+			testSpeaker = 0
+		speakers = featureVectors.keys()
+		testFeatureVector, testTruthVector = collateData([speakers[testSpeaker]])
+		trainFeatureVector, trainTruthVector = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]])
 
-	testSpeaker = lastSpeaker + 1
-	if testSpeaker >= len(featureVectors.keys()):
-		testSpeaker = 0
-	speakers = featureVectors.keys()
-	testFeatureVector, testTruthVector = collateData([speakers[testSpeaker]])
-	trainFeatureVector, trainTruthVector = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]])
-
-	lastSpeaker = testSpeaker
-	print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
+		lastSpeaker = testSpeaker
+		print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
 
 def modelProcess(modelFunc, tag, ms):
@@ -248,13 +254,16 @@ def runRBFvariants():
 		os.mkdir(outputPath)
 	clearVariables()
 	loadFeatureVector(inputPath, 'mfcc')
-	iterlen = num_sets * len(featureVectors.keys())
+	if manualTrainTestSet:
+		iterlen = num_sets
+	else:
+		iterlen = num_sets * len(featureVectors.keys())
 	for i in range(iterlen):
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
 		# mds.runRBFvariantsGamma(ms, 0.7, 0.8, 0.001)
-		mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 0.775, 2, .78125, .617284])
+		mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284])
 
 mds.init(num_threads_sema, modelProcess)
 # runPaaFunctions()

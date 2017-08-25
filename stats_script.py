@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.7 0.9 0.001 0818/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.7 0.81 0.001 0825/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
