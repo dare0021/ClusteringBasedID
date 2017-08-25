@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.7 0.81 0.001 0825/"
+inputPath = "/home/jkih/Music/sukwoo_j/testres/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -15,6 +15,11 @@ compColors = [(20,230,40),(225,90,90),(240,240,60),(90,175,240),(255,255,255)]
 
 results = []
 # np.seterr(invalid='raise')
+for i in range(9, 22):
+	PAAFeatureVectors.append('MFCC ' + str(i))
+for i in range(22, 34):
+	PAAFeatureVectors.append('Chroma Vector ' + str(i))
+PAAFeatureVectors.append('Chroma Deviation')
 
 class Result:
 	# param order same as file name
@@ -25,6 +30,7 @@ class Result:
 		self.testset = testset
 		self.accuracy = acc
 		self.f1 = f1
+		self.type = 'Result'
 
 	def __str__(self):
 		retval  = kvpDisp("Feature  ", self.feature)
@@ -35,8 +41,31 @@ class Result:
 		retval += kvpDisp("F1       ", self.f1)
 		return retval
 
+class CGResult:
+	def __init__(self, filename, acc, f1, c, g):
+		self.filename = filename
+		self.accuracy = acc
+		self.f1 = f1
+		self.c = c
+		self.gamma = g
+		self.type = 'CGResult'
+
+	def __str__(self):
+		retval  = kvpDisp("FileNum  ", self.filename)
+		retval += kvpDisp("Accuracy ", self.accuracy)
+		retval += kvpDisp("F1       ", self.f1)
+		retval += kvpDisp("c value  ", self.c)
+		retval += kvpDisp("gamma    ", self.gamma)
+		return retval
+
 def kvpDisp(key, val):
 	return str(key) + " : " + str(val) + "\n"
+
+def tabSepLst(lst):
+	retval = ""
+	for i in lst:
+		retval += str(i) + '\t'
+	return retval[:len(retval)-1]
 
 def saveAndPrint(f, s):
 	print s
@@ -50,17 +79,40 @@ def getFeatureNum(fileName):
 	fileName = fileName[fileName.find('_')+1:]
 	return int(fileName[:fileName.find('_')])
 
-def loadFiles():
+def loadCGFiles():
 	global results
-	global PAAFeatureVectors
 
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
-	for i in range(9, 22):
-		PAAFeatureVectors.append('MFCC ' + str(i))
-	for i in range(22, 34):
-		PAAFeatureVectors.append('Chroma Vector ' + str(i))
-	PAAFeatureVectors.append('Chroma Deviation')
+	for filePath in filePaths:
+		f = open(filePath, 'r')
+		s = f.readline()
+		f.close()
+
+		suffix = filePath[filePath.rfind('_g_')+3:]
+		fileName = suffix[suffix.rfind('/')+1:]
+		g = float(suffix[:suffix.find('_')])
+		suffix = suffix[suffix.find('_c_')+3:]
+		c = int(suffix[:suffix.find('_')])
+		accuracy = float(s[10:s.find('\t')])
+		f1 = float(s[s.find('f1: ')+4:])
+		if accuracy < 0 and accuracy > 1:
+			print 'INVALID ACC @ ' + filePath
+			print accuracy
+			os.exit
+		elif f1 < 0 and f1 > 1:
+			print 'INVALID F1 @ ' + filePath
+			print f1
+			os.exit
+		fileNum = fileName[fileName.find('_g_')+1:fileName.rfind('_')]
+		result = CGResult(fileNum, accuracy, f1, c, g)
+		print result
+		results.append(result)
+
+def loadFiles():
+	global results
+
+	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
 	for filePath in filePaths:
 		f = open(filePath, 'r')
@@ -93,6 +145,14 @@ def smartAppend(d, key, val):
 		d[key].append(val)
 	else:
 		d[key] = [val]
+
+def listFind(lst, item):
+	retval = 0
+	for i in lst:
+		if i == item:
+			return retval
+		retval += 1
+	return None
 
 def saveBySpeaker(f):
 	accs = dict()
@@ -235,6 +295,84 @@ def saveStats(f, accuracies, f1s, plotFileNameStub=''):
 		plt.savefig(outputPath + plotFileNameStub + '.png', bbox_inches='tight')
 		plt.close()
 
+def saveGrid(f, grid, cList, gList):
+	saveAndPrint(f, ' \t' + tabSepLst(gList) + '\n')
+	gLoc = 0
+	for gSub in grid:
+		saveAndPrint(f, str(cList[gLoc]) + '\t' + tabSepLst(gSub) + '\n')
+		gLoc += 1
+
+def saveCGgrid(f):
+	accs = dict()
+	f1s = dict()
+
+	gList = []
+	for result in results:
+		c = result.c
+		g = result.gamma
+		if not (c in accs.keys()):
+			accs[c] = dict()
+			f1s[c] = dict()
+		smartAppend(accs[c], g, result.accuracy)
+		smartAppend(f1s[c], g, result.f1)
+		if not (g in gList):
+			gList.append(g)
+
+	ameanGrid = np.zeros((len(accs), len(gList)))
+	amedGrid = np.zeros((len(accs), len(gList)))
+	fmeanGrid = np.zeros((len(accs), len(gList)))
+	fmedGrid = np.zeros((len(accs), len(gList)))
+
+	cList = accs.keys()
+	cList.sort()
+	gList.sort()
+
+	accmax_bymean = [-1,'Null']
+	accmax_bymed = [-1,'Null']
+	f1max_bymean = [-1,'Null']
+	f1max_bymed = [-1,'Null']
+	for c in accs.keys():
+		for g in accs[c].keys():
+			saveAndPrint(f, kvpDisp('c', c))
+			saveAndPrint(f, kvpDisp('g', g))
+			saveStats(f, accs[c][g], f1s[c][g], 'Comb_'+str(c) + ' + ' +str(g))
+			f.write('\n')
+			amean = np.mean(accs[c][g])
+			amed = np.median(accs[c][g])
+			fmean = np.mean(f1s[c][g])
+			fmed = np.median(f1s[c][g])
+			cLoc = listFind(cList, c)
+			gLoc = listFind(gList, g)
+			ameanGrid[cLoc][gLoc] = amean
+			amedGrid[cLoc][gLoc] = amed
+			fmeanGrid[cLoc][gLoc] = fmean
+			fmedGrid[cLoc][gLoc] = fmed
+			accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (amean, str(c) + ' + ' + str(g)))
+			accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (amed, str(c) + ' + ' + str(g)))
+			f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (fmean, str(c) + ' + ' + str(g)))
+			f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (fmed, str(c) + ' + ' + str(g)))
+	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
+	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
+	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
+	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
+
+	csv = open(f.name + '.csv', 'w')
+	saveAndPrint(csv, 'X: gamma values\n')
+	saveAndPrint(csv, 'Y: c values\n')
+	saveAndPrint(csv, '\n')
+	saveAndPrint(csv, 'amean\n')
+	saveGrid(csv, ameanGrid, cList, gList)
+	saveAndPrint(csv, '\n')
+	saveAndPrint(csv, 'amed\n')
+	saveGrid(csv, amedGrid, cList, gList)
+	saveAndPrint(csv, '\n')
+	saveAndPrint(csv, 'fmean\n')
+	saveGrid(csv, fmeanGrid, cList, gList)
+	saveAndPrint(csv, '\n')
+	saveAndPrint(csv, 'fmed\n')
+	saveGrid(csv, fmedGrid, cList, gList)
+	csv.close()
+
 def saveToFile(verbose=0):
 	accuracies = []
 	f1s = []
@@ -248,19 +386,28 @@ def saveToFile(verbose=0):
 	f = open(outputPath + "summary.txt", 'w')
 	saveStats(f, accuracies, f1s, 'summary')
 
-	# by broad categories
-	if verbose > 0:
-		saveBySpeaker(f)
-		f.write("\n")
-		saveByFeature(f)
-		f.write("\n")
-		saveByModel(f)
-		f.write('\n')
+	if results[0].type == 'Result':
+		# by broad categories
+		if verbose > 0:
+			saveBySpeaker(f)
+			f.write("\n")
+			saveByFeature(f)
+			f.write("\n")
+			saveByModel(f)
+			f.write('\n')
 
-	# by specific combinations of feature vector & model
-	if verbose > 1:
-		saveByCombination(f)
-		f.write('\n')
+		# by specific combinations of feature vector & model
+		if verbose > 1:
+			saveByCombination(f)
+			f.write('\n')
+	elif results[0].type == 'CGResult':
+		if verbose > 0:
+			saveCGgrid(f)
+			f.write('\n')
+	else:
+		print "stats_script.saveToFile() failed with input:", results[0]
+		assert False
+		return -1
 
 	# copy of each result file minus the raw output
 	if verbose > 2:
@@ -398,7 +545,7 @@ def gammaHeuristicGraph(heuristicsOn = "Both"):
 		plt.savefig(outputPath + 'gamma_h0.png', bbox_inches='tight')
 		plt.close()
 
-loadFiles()
+loadCGFiles()
 saveToFile(2)
-drawPixelGraphs()
-gammaHeuristicGraph(heuristicsOn = True)
+# drawPixelGraphs()
+# gammaHeuristicGraph(heuristicsOn = True)
