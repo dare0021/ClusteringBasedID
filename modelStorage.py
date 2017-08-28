@@ -135,6 +135,14 @@ def runRBFvariantsGamma(ms, gammaMin, gammaMax, gammaStep):
 			ms.args = factory_SVM_rbf(gamma, heuristicsOn)
 			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 
+def runRBFvariantsCList(ms, cList, gamma):
+	for heuristicsOn in [True]:
+		print 'heuristics', heuristicsOn
+		for c in cList:
+			print 'c', c
+			ms.args = factory_SVM_rbf(gamma, heuristicsOn, c)
+			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+
 def runRBFvariants2DList(ms, cList, gammaList):
 	for heuristicsOn in [True]:
 		print 'heuristics', heuristicsOn

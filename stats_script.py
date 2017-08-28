@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo_j/testres/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.01 0..04 0.001/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -109,7 +109,7 @@ def loadCGFiles():
 		print result
 		results.append(result)
 
-def loadFiles():
+def loadSingleVariableFiles():
 	global results
 
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
@@ -545,7 +545,7 @@ def gammaHeuristicGraph(heuristicsOn = "Both"):
 		plt.savefig(outputPath + 'gamma_h0.png', bbox_inches='tight')
 		plt.close()
 
-loadCGFiles()
+loadSingleVariableFiles()
 saveToFile(2)
-# drawPixelGraphs()
-# gammaHeuristicGraph(heuristicsOn = True)
+drawPixelGraphs()
+gammaHeuristicGraph(heuristicsOn = True)
