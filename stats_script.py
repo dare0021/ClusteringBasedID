@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF gamma search 0.01 0..04 0.001/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF c search 1 128 x2/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -473,7 +473,7 @@ def getComparisonList(predList, trueList):
 				retval[i] = 2
 	return retval
 
-def gammaHeuristicGraph(heuristicsOn = "Both"):
+def variableSearchGraph(variableMarker, variableName, heuristicsOn = "Both"):
 	accs = dict()
 	f1s = dict()
 	for result in results:
@@ -488,7 +488,7 @@ def gammaHeuristicGraph(heuristicsOn = "Both"):
 				tfval = 1
 			else:
 				tfval = 0
-			gval = float(modString[modString.rfind('_g_')+3 : modString.rfind('_H_')])
+			gval = float(modString[modString.rfind(variableMarker)+len(variableMarker) : modString.rfind('_H_')])
 		if not (gval in accs.keys()):
 			accs[gval] = [[],[]]
 			f1s[gval] = [[],[]]
@@ -512,13 +512,13 @@ def gammaHeuristicGraph(heuristicsOn = "Both"):
 		plt.plot(keys, v3, label='Amed', color='#3030FF')
 		plt.plot(keys, v4, label='Fmed', color='#7070FF')
 		plt.xticks(keys)
-		plt.xlabel('gamma')
+		plt.xlabel(variableName)
 		# plt.ylim([0,1])
 		plt.legend(loc=0)
 		if not os.path.isdir(outputPath):
 			os.mkdir(outputPath)
-		assert not os.path.isfile(outputPath + 'gamma_h1.png')
-		plt.savefig(outputPath + 'gamma_h1.png', bbox_inches='tight')
+		assert not os.path.isfile(outputPath + variableName + '_h1.png')
+		plt.savefig(outputPath + variableName + '_h1.png', bbox_inches='tight')
 		plt.close()
 	if heuristicsOn == 'Both' or heuristicsOn == False:
 		v1 = []
@@ -536,16 +536,16 @@ def gammaHeuristicGraph(heuristicsOn = "Both"):
 		plt.plot(keys, v3, label='Amed', color='#3030FF')
 		plt.plot(keys, v4, label='Fmed', color='#7070FF')
 		plt.xticks(keys)
-		plt.xlabel('gamma')
+		plt.xlabel(variableName)
 		# plt.ylim([0,1])
 		plt.legend(loc=0)
 		if not os.path.isdir(outputPath):
 			os.mkdir(outputPath)
-		assert not os.path.isfile(outputPath + 'gamma_h0.png')
-		plt.savefig(outputPath + 'gamma_h0.png', bbox_inches='tight')
+		assert not os.path.isfile(outputPath + variableName + '_h0.png')
+		plt.savefig(outputPath + variableName + '_h0.png', bbox_inches='tight')
 		plt.close()
 
 loadSingleVariableFiles()
 saveToFile(2)
 drawPixelGraphs()
-gammaHeuristicGraph(heuristicsOn = True)
+variableSearchGraph(heuristicsOn = True, variableMarker = '_c_', variableName = 'c')
