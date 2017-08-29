@@ -267,7 +267,7 @@ def runRBFvariants():
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
 		# mds.runRBFvariantsGamma(ms, 0.01, 0.04, 0.001)
 		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284])
-		mds.runRBFvariantsCList(ms, np.arange(1, 2, 0.001), 0.03)
+		mds.runRBFvariantsCList(ms, np.arange(1, 2, 0.02), 0.03)
 
 mds.init(num_threads_sema, modelProcess)
 # runPaaFunctions()

@@ -1,14 +1,21 @@
 # too much clutter to keep in run.py, which is otherwise a logics file
 
 from threading import Thread, BoundedSemaphore
+from datetime import datetime
 import sklearn 
 import numpy as np
 from sklearn import neighbors, svm, cluster
 import speakerInfo as sinfo
-num_threads_sema = None
-threadFunction = None
+
 # default 200, in MB
 ram_usage = 1024
+
+# Internal logic variables
+num_threads_sema = None
+threadFunction = None
+numJobs = 0
+iJob = 0
+starttime = None
 
 class ModelSettings:
 	def __init__(self, i, paaFunction, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, speakerName, args=None):
@@ -127,27 +134,50 @@ def runAllModelsMFCC(ms):
 	runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_' + str(ms.i) + '_' + ms.speakerName, ms)
 	runModel(model_SVM_sigmoid, 'PAA_' + str(ms.paaFunction) + '_SVM_Sigmoid_' + str(ms.i) + '_' + ms.speakerName, ms)
 
-def runRBFvariantsGamma(ms, gammaMin, gammaMax, gammaStep):
-	for heuristicsOn in [True]:
+# parallelization runs in runModel
+# ETA timer runs outside said function, sidestepping the coherence problem
+def resetETAtimer(num_jobs):
+	global numJobs
+	global iJob
+	global starttime
+	numJobs = num_jobs
+	iJob = 0
+	starttime = datetime.now()
+
+def incrementETAtimer():
+	print 'Completed', iJob, '/', numJobs, 'jobs'
+	print 'ETA', datetime.now() + (datetime.now() - starttime) * numJobs / iJob
+
+def runRBFvariantsGamma(ms, gList):
+	heuristicsOnList = [True]
+	resetETAtimer(len(gList) * len(heuristicsOnList))
+	for heuristicsOn in heuristicsOnList:
 		print 'heuristics', heuristicsOn
-		for gamma in np.arange(gammaMin, gammaMax, gammaStep):
+		for gamma in gList:
 			print 'gamma', gamma
 			ms.args = factory_SVM_rbf(gamma, heuristicsOn)
 			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+			incrementETAtimer()
 
 def runRBFvariantsCList(ms, cList, gamma):
-	for heuristicsOn in [True]:
+	heuristicsOnList = [True]
+	resetETAtimer(len(cList) * len(heuristicsOnList))
+	for heuristicsOn in heuristicsOnList:
 		print 'heuristics', heuristicsOn
 		for c in cList:
 			print 'c', c
 			ms.args = factory_SVM_rbf(gamma, heuristicsOn, c)
 			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+			incrementETAtimer()
 
 def runRBFvariants2DList(ms, cList, gammaList):
-	for heuristicsOn in [True]:
+	heuristicsOnList = [True]
+	resetETAtimer(len(cList) * len(heuristicsOnList) * len(gammaList))
+	for heuristicsOn in heuristicsOnList:
 		print 'heuristics', heuristicsOn
 		for c in cList:
 			for gamma in gammaList:
 				print 'c', c, 'g', gamma
 				ms.args = factory_SVM_rbf(gamma, heuristicsOn, c)
 				runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+				incrementETAtimer()
