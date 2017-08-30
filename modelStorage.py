@@ -11,7 +11,7 @@ import speakerInfo as sinfo
 ram_usage = 1024
 
 # Internal logic variables
-num_threads_sema = None
+threadSemaphore = None
 threadFunction = None
 numJobs = 0
 iJob = 0
@@ -28,15 +28,15 @@ class ModelSettings:
 		self.speakerName = speakerName
 		self.args = args
 
-def init(num_threads_sema_input, functionToRun):
-	global num_threads_sema
+def init(threadSemaphore_input, functionToRun):
+	global threadSemaphore
 	global threadFunction
-	num_threads_sema = num_threads_sema_input
+	threadSemaphore = threadSemaphore_input
 	threadFunction = functionToRun
 
 def runModel(modelFunc, tag, ms):
-	global num_threads_sema
-	num_threads_sema.acquire()
+	global threadSemaphore
+	threadSemaphore.acquire()
 	p = Thread(target=threadFunction, args=(modelFunc, tag, ms))
 	p.start()
 
@@ -136,21 +136,22 @@ def runAllModelsMFCC(ms):
 
 # parallelization runs in runModel
 # ETA timer runs outside said function, sidestepping the coherence problem
-def resetETAtimer(num_jobs):
+def resetETAtimer(num_jobs, iterDone, iterTotal):
 	global numJobs
 	global iJob
 	global starttime
-	numJobs = num_jobs
-	iJob = 0
+	numJobs = num_jobs * iterTotal
+	iJob = num_jobs * iterDone
 	starttime = datetime.now()
 
 def incrementETAtimer():
-	print 'Completed', iJob, '/', numJobs, 'jobs'
-	print 'ETA', datetime.now() + (datetime.now() - starttime) * numJobs / iJob
+	global iJob
+	iJob += 1
+	print 'Completed', iJob, '/', numJobs, 'jobs', 'ETA', datetime.now() + (datetime.now() - starttime) * numJobs / iJob
 
-def runRBFvariantsGamma(ms, gList):
+def runRBFvariantsGamma(ms, gList, iterDone, iterTotal):
 	heuristicsOnList = [True]
-	resetETAtimer(len(gList) * len(heuristicsOnList))
+	resetETAtimer(len(gList) * len(heuristicsOnList), iterDone, iterTotal)
 	for heuristicsOn in heuristicsOnList:
 		print 'heuristics', heuristicsOn
 		for gamma in gList:
@@ -159,9 +160,9 @@ def runRBFvariantsGamma(ms, gList):
 			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 			incrementETAtimer()
 
-def runRBFvariantsCList(ms, cList, gamma):
+def runRBFvariantsCList(ms, cList, gamma, iterDone, iterTotal):
 	heuristicsOnList = [True]
-	resetETAtimer(len(cList) * len(heuristicsOnList))
+	resetETAtimer(len(cList) * len(heuristicsOnList), iterDone, iterTotal)
 	for heuristicsOn in heuristicsOnList:
 		print 'heuristics', heuristicsOn
 		for c in cList:
@@ -170,9 +171,9 @@ def runRBFvariantsCList(ms, cList, gamma):
 			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 			incrementETAtimer()
 
-def runRBFvariants2DList(ms, cList, gammaList):
+def runRBFvariants2DList(ms, cList, gammaList, iterDone, iterTotal):
 	heuristicsOnList = [True]
-	resetETAtimer(len(cList) * len(heuristicsOnList) * len(gammaList))
+	resetETAtimer(len(cList) * len(heuristicsOnList) * len(gammaList), iterDone, iterTotal)
 	for heuristicsOn in heuristicsOnList:
 		print 'heuristics', heuristicsOn
 		for c in cList:

@@ -15,8 +15,8 @@ manualTrainTestSet = False
 trainLabels = ["joo"]
 testLabels = ['kim', 'lee', 'seo', 'yoon']
 outputPath = inputPath + str(datetime.now().time()) + '/'
-num_sets = 3
-num_threads_sema = BoundedSemaphore(value=4)
+numSets = 3
+numThreads = 4
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -27,6 +27,7 @@ timeStep = 10
 # don't change unless necessary
 zeroThresh = 1e-10
 featureVectorSize = 13
+threadSemaphore = BoundedSemaphore(value=numThreads)
 
 # no touch
 featureVectors = dict()
@@ -172,7 +173,7 @@ def getSubset():
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
 
 def modelProcess(modelFunc, tag, ms):
-	global num_threads_sema
+	global threadSemaphore
 	def resetModel():
 		if ms.args != None:
 			return modelFunc(ms.args)
@@ -223,7 +224,7 @@ def modelProcess(modelFunc, tag, ms):
 	f.write('\n')
 	f.write(str(testTruthVector))
 	f.close()
-	num_threads_sema.release()
+	threadSemaphore.release()
 	
 def runPaaFunctions():
 	if not os.path.exists(outputPath):
@@ -232,22 +233,22 @@ def runPaaFunctions():
 		print "Running feature extraction #" + str(paaFunction)
 		clearVariables()
 		loadFeatureVector(inputPath, 'paa', paaFunction)
-		for i in range(num_sets * len(featureVectors.keys())):
+		for i in range(numSets * len(featureVectors.keys())):
 			trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 			ms = mds.ModelSettings(i, paaFunction, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
-			mds.runAllModelsPAA(ms, windowSize)
+			mds.runAllModelsPAA(ms, windowSize, iterDone, iterTotal)
 
 def runSphinxFiles():
 	if not os.path.exists(outputPath):
 		os.mkdir(outputPath)
 	clearVariables()
 	loadFeatureVector(inputPath, 'mfcc')
-	iterlen = num_sets * len(featureVectors.keys())
+	iterlen = numSets * len(featureVectors.keys())
 	for i in range(iterlen):
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, featureVectors.keys()[lastSpeaker])
-		mds.runAllModelsMFCC(ms)
+		mds.runAllModelsMFCC(ms, iterDone, iterTotal)
 
 def runRBFvariants():
 	if not os.path.exists(outputPath):
@@ -255,9 +256,9 @@ def runRBFvariants():
 	clearVariables()
 	loadFeatureVector(inputPath, 'mfcc')
 	if manualTrainTestSet:
-		iterlen = num_sets
+		iterlen = numSets
 	else:
-		iterlen = num_sets * len(featureVectors.keys())
+		iterlen = numSets * len(featureVectors.keys())
 	for i in range(iterlen):
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
@@ -265,11 +266,11 @@ def runRBFvariants():
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
-		# mds.runRBFvariantsGamma(ms, 0.01, 0.04, 0.001)
-		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284])
-		mds.runRBFvariantsCList(ms, np.arange(1, 2, 0.02), 0.03)
+		# mds.runRBFvariantsGamma(ms, 0.01, 0.04, 0.001, i, iterlen)
+		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284], i, iterlen)
+		mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
 
-mds.init(num_threads_sema, modelProcess)
+mds.init(threadSemaphore, modelProcess)
 # runPaaFunctions()
 # runSphinxFiles()
 runRBFvariants()
