@@ -15,7 +15,7 @@ manualTrainTestSet = False
 trainLabels = ["joo"]
 testLabels = ['kim', 'lee', 'seo', 'yoon']
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 3
+numSets = 10
 numThreads = 4
 
 # pAA settings 
@@ -131,7 +131,7 @@ def loadWAVwithPAA(inputPath, paaFunction):
 		storeFeature(sid, data, filePath)
 
 # returns: feature vector array (2D), ground truth array (1D)
-def collateData(speakerList):
+def collateData(speakerList, divider = None, subtractor = None):
 	x = []
 	y = []
 
@@ -148,25 +148,34 @@ def collateData(speakerList):
 			y.extend(groundTruths[speaker][i])
 
 	sklSS = sklearn.preprocessing.StandardScaler()
-	x = sklSS.fit_transform(x)
-	if not validateNormalization(x):
-		print "ERR: data not normalized for speakers " + str(speakerList)
-		print "Check if bounds are too close"
-		assert False
-	return x, y
+	if divider == None:
+		x = sklSS.fit_transform(x)		
+		if not validateNormalization(x):
+			print "ERR: data not normalized for speakers " + str(speakerList)
+			print "Check if bounds are too close"
+			assert False
+	else:
+		sklSS.scale_ = divider
+		sklSS.mean_ = subtractor
+		x = sklSS.transform(x)
+		if not validateNormalization(x):
+			print "WARN: data not normalized for speakers " + str(speakerList)
+			print "divider", divider
+			print "subtractor", subtractor
+	return x, y, sklSS.scale_, sklSS.mean_
 
 def getSubset():
 	if manualTrainTestSet:
-		testFeatureVector, testTruthVector = collateData(testLabels)
-		trainFeatureVector, trainTruthVector = collateData(trainLabels)
+		trainFeatureVector, trainTruthVector, datA, datB = collateData(trainLabels)
+		testFeatureVector, testTruthVector, datA, datB = collateData(testLabels, datA, datB)
 	else:
 		global lastSpeaker
 		testSpeaker = lastSpeaker + 1
 		if testSpeaker >= len(featureVectors.keys()):
 			testSpeaker = 0
 		speakers = featureVectors.keys()
-		testFeatureVector, testTruthVector = collateData([speakers[testSpeaker]])
-		trainFeatureVector, trainTruthVector = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]])
+		trainFeatureVector, trainTruthVector, datA, datB = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]])
+		testFeatureVector, testTruthVector, datA, datB = collateData([speakers[testSpeaker]], datA, datB)
 
 		lastSpeaker = testSpeaker
 		print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
@@ -266,9 +275,10 @@ def runRBFvariants():
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
-		# mds.runRBFvariantsGamma(ms, 0.01, 0.04, 0.001, i, iterlen)
+		mds.runRBFvariantsGamma(ms, np.arange(0.01, 0.5, 0.01), i, iterlen)
 		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284], i, iterlen)
-		mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
+		# mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
+		# mds.runRBFvariantsCList(ms, [1], 0.03, i, iterlen)
 
 mds.init(threadSemaphore, modelProcess)
 # runPaaFunctions()
