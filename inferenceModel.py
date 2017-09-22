@@ -114,8 +114,9 @@ def automatedSearch(fuzzRange, decayRange):
 	global outputPath
 	global fuzzyness
 	global decay
-	global results
 
+	loadFiles()
+	print 'File load complete'
 	outputPathPrefix = outputPath[:len(outputPath)-1]
 	for fi in fuzzRange:
 		for di in decayRange:
@@ -123,8 +124,6 @@ def automatedSearch(fuzzRange, decayRange):
 			print outputPath
 			fuzzyness = fi
 			decay = di
-			results = []
-			loadFiles()
 			processResults()
 
 # loadFiles()
