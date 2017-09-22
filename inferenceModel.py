@@ -3,6 +3,7 @@
 
 import os
 import ast
+import numpy as np
 
 inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
 outputPath = inputPath + "inferred/"
@@ -119,6 +120,7 @@ def automatedSearch(fuzzRange, decayRange):
 	for fi in fuzzRange:
 		for di in decayRange:
 			outputPath = outputPathPrefix + " f" + str(fi) + " d" + str(di) + "/"
+			print outputPath
 			fuzzyness = fi
 			decay = di
 			results = []
@@ -127,4 +129,4 @@ def automatedSearch(fuzzRange, decayRange):
 
 # loadFiles()
 # processResults()
-automatedSearch(range(0.4, 0.01), [1.0/2, 1.0/4, 1.0/8, 1.0/16, 1.0/32])
+automatedSearch(np.arange(0.0, 0.4, 0.01), [1.0/2, 1.0/4, 1.0/8, 1.0/16, 1.0/32])
