@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF c search 1.98 3 0.02/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/inferred/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -548,4 +548,4 @@ def variableSearchGraph(variableMarker, variableName, heuristicsOn = "Both"):
 loadSingleVariableFiles()
 saveToFile(2)
 drawPixelGraphs()
-variableSearchGraph(heuristicsOn = True, variableMarker = '_c_', variableName = 'c')
+variableSearchGraph(heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
