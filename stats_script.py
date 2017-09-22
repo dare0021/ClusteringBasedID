@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/inferred/"
+inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
 outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
 
@@ -545,7 +545,21 @@ def variableSearchGraph(variableMarker, variableName, heuristicsOn = "Both"):
 		plt.savefig(outputPath + variableName + '_h0.png', bbox_inches='tight')
 		plt.close()
 
-loadSingleVariableFiles()
-saveToFile(2)
-drawPixelGraphs()
-variableSearchGraph(heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
+def runMultiple():
+	for di in [x[0] for x in os.walk(inputPath) if 'inferred' in x]:
+		global inputPath
+		global outputPath
+		global results
+		inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
+		outputPath = inputPath + 'stats/'
+		results = []
+		loadSingleVariableFiles()
+		saveToFile(2)
+		drawPixelGraphs()
+		variableSearchGraph(heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
+
+# loadSingleVariableFiles()
+# saveToFile(2)
+# drawPixelGraphs()
+# variableSearchGraph(heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
+runMultiple()
