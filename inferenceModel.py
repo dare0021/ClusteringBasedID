@@ -4,6 +4,7 @@
 import os
 import ast
 import numpy as np
+from multiprocessing import Pool
 
 inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
 outputPath = inputPath + "inferred/"
@@ -17,6 +18,7 @@ decay = 1.0/2
 verbose = False
 
 results = []
+pool = Pool(processes = 4)
 
 class Result:
 	def __init__(self, filename, accuracy, f1, rawOutput, groundTruth):
@@ -57,6 +59,12 @@ def checkCrossover(weighedAverage, currentOutput):
 	if currentOutput:
 		return weighedAverage < 0.5 - fuzzyness
 	return weighedAverage > 0.5 + fuzzyness
+
+# async write to file
+def writeToFile(path, content):
+	f = open(path, 'w')
+	f.write(content)
+	f.close()
 
 # assumes input is 0 or 1
 def processResults():
@@ -103,12 +111,11 @@ def processResults():
 
 		if not os.path.exists(outputPath):
 			os.mkdir(outputPath)
-		f = open(outputPath + result.filename, 'w')
-		f.write('accuracy: ' + str(accuracy) + '\tf1: ' + str(f1) + '\n')
-		f.write('deltaAccuracy: ' + str(accuracy - result.accuracy) + '\tdeltaF1: ' + str(f1 - result.f1) + '\n')
-		f.write(str(outputArray) + '\n')
-		f.write(str(result.groundTruth) + '\n')
-		f.close()
+		content = 'accuracy: ' + str(accuracy) + '\tf1: ' + str(f1) + '\n'
+		content += 'deltaAccuracy: ' + str(accuracy - result.accuracy) + '\tdeltaF1: ' + str(f1 - result.f1) + '\n'
+		content += str(outputArray) + '\n'
+		content += str(result.groundTruth) + '\n'
+		pool.apply_async(writeToFile(outputPath + result.filename, content))
 
 def automatedSearch(fuzzRange, decayRange):
 	global outputPath
@@ -129,3 +136,7 @@ def automatedSearch(fuzzRange, decayRange):
 # loadFiles()
 # processResults()
 automatedSearch(np.arange(0.0, 0.4, 0.01), [1.0/2, 1.0/4, 1.0/8, 1.0/16, 1.0/32])
+
+print 'Waiting for file IO...'
+pool.join()
+print 'Done'
