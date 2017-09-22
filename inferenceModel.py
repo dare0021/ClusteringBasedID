@@ -13,6 +13,7 @@ fuzzyness = 0.1
 # decay value for EWMA
 # lower decay means more inertia
 decay = 1.0/2
+verbose = False
 
 results = []
 
@@ -47,7 +48,8 @@ def loadFiles():
 		f.close()
 
 		result = Result(fileName, accuracy, f1, predicted, groundTruth)
-		print result
+		if verbose:
+			print result
 		results.append(result)
 
 def checkCrossover(weighedAverage, currentOutput):
@@ -93,9 +95,10 @@ def processResults():
 		precision = float(tp) / (tp + fp)
 		f1 = 2.0 * precision * recall / (precision + recall)
 
-		print result
-		print 'newAccuracy: ' + str(accuracy) + '\tnewF1: ' + str(f1)
-		print 'deltaAccuracy: ' + str(accuracy - result.accuracy) + '\tdeltaF1: ' + str(f1 - result.f1)
+		if verbose:
+			print result
+			print 'newAccuracy: ' + str(accuracy) + '\tnewF1: ' + str(f1)
+			print 'deltaAccuracy: ' + str(accuracy - result.accuracy) + '\tdeltaF1: ' + str(f1 - result.f1)
 
 		if not os.path.exists(outputPath):
 			os.mkdir(outputPath)
@@ -106,5 +109,22 @@ def processResults():
 		f.write(str(result.groundTruth) + '\n')
 		f.close()
 
-loadFiles()
-processResults()
+def automatedSearch(fuzzRange, decayRange):
+	global outputPath
+	global fuzzyness
+	global decay
+	global results
+
+	outputPathPrefix = outputPath[:len(outputPath)-1]
+	for fi in fuzzRange:
+		for di in decayRange:
+			outputPath = outputPathPrefix + " f" + str(fi) + " d" + str(di) + "/"
+			fuzzyness = fi
+			decay = di
+			results = []
+			loadFiles()
+			processResults()
+
+# loadFiles()
+# processResults()
+automatedSearch(range(0.4, 0.01), [1.0/2, 1.0/4, 1.0/8, 1.0/16, 1.0/32])
