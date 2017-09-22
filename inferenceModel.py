@@ -16,6 +16,7 @@ fuzzyness = 0.1
 # lower decay means more inertia
 decay = 1.0/2
 verbose = False
+saveOutputFrames = False
 
 results = []
 pool = Pool(processes = 4)
@@ -113,8 +114,9 @@ def processResults():
 			os.mkdir(outputPath)
 		content = 'accuracy: ' + str(accuracy) + '\tf1: ' + str(f1) + '\n'
 		content += 'deltaAccuracy: ' + str(accuracy - result.accuracy) + '\tdeltaF1: ' + str(f1 - result.f1) + '\n'
-		content += str(outputArray) + '\n'
-		content += str(result.groundTruth) + '\n'
+		if saveOutputFrames:
+			content += str(outputArray) + '\n'
+			content += str(result.groundTruth) + '\n'
 		pool.apply_async(writeToFile(outputPath + result.filename, content))
 
 def automatedSearch(fuzzRange, decayRange):
