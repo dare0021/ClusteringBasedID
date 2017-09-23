@@ -13,7 +13,6 @@ tfColors = [(225,90,90),(20,230,40),(255,255,255)]
 # TP FP FN TN Padding
 compColors = [(20,230,40),(225,90,90),(240,240,60),(90,175,240),(255,255,255)]
 
-results = []
 # np.seterr(invalid='raise')
 for i in range(9, 22):
 	PAAFeatureVectors.append('MFCC ' + str(i))
@@ -80,8 +79,7 @@ def getFeatureNum(fileName):
 	return int(fileName[:fileName.find('_')])
 
 def loadCGFiles():
-	global results
-
+	results = []
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
 	for filePath in filePaths:
@@ -108,10 +106,10 @@ def loadCGFiles():
 		result = CGResult(fileNum, accuracy, f1, c, g)
 		print result
 		results.append(result)
+	return results
 
 def loadSingleVariableFiles():
-	global results
-
+	results = []
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
 	for filePath in filePaths:
@@ -139,6 +137,7 @@ def loadSingleVariableFiles():
 		result = Result(featureVector, algorithm, fileNum, speaker, accuracy, f1)
 		print result
 		results.append(result)
+	return results
 
 def smartAppend(d, key, val):
 	if key in d.keys():
@@ -154,7 +153,7 @@ def listFind(lst, item):
 		retval += 1
 	return None
 
-def saveBySpeaker(f):
+def saveBySpeaker(f, results):
 	accs = dict()
 	f1s = dict()
 
@@ -174,7 +173,7 @@ def getListWithMaxFirstElement(kvp1, kvp2):
 		return kvp1
 	return kvp2
 
-def saveByFeature(f):
+def saveByFeature(f, results):
 	accs = dict()
 	f1s = dict()
 
@@ -202,7 +201,7 @@ def saveByFeature(f):
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
 	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
-def saveByModel(f):
+def saveByModel(f, results):
 	accs = dict()
 	f1s = dict()
 
@@ -229,7 +228,7 @@ def saveByModel(f):
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
 	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
-def saveByCombination(f):
+def saveByCombination(f, results):
 	# Are nested dicts a good idea? Who knows? 
 	accs = dict()
 	f1s = dict()
@@ -302,7 +301,7 @@ def saveGrid(f, grid, cList, gList):
 		saveAndPrint(f, str(cList[gLoc]) + '\t' + tabSepLst(gSub) + '\n')
 		gLoc += 1
 
-def saveCGgrid(f):
+def saveCGgrid(f, results):
 	accs = dict()
 	f1s = dict()
 
@@ -373,7 +372,7 @@ def saveCGgrid(f):
 	saveGrid(csv, fmedGrid, cList, gList)
 	csv.close()
 
-def saveToFile(verbose=0):
+def saveToFile(results, verbose=0):
 	accuracies = []
 	f1s = []
 
@@ -473,7 +472,7 @@ def getComparisonList(predList, trueList):
 				retval[i] = 2
 	return retval
 
-def variableSearchGraph(variableMarker, variableName, heuristicsOn = "Both"):
+def variableSearchGraph(results, variableMarker, variableName, heuristicsOn = "Both"):
 	accs = dict()
 	f1s = dict()
 	for result in results:
@@ -549,17 +548,16 @@ def runMultiple():
 	for di in [x[0] for x in os.walk(inputPath) if 'inferred' in x]:
 		global inputPath
 		global outputPath
-		global results
 		inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
 		outputPath = inputPath + 'stats/'
-		results = []
-		loadSingleVariableFiles()
-		saveToFile(2)
+		
+		results = loadSingleVariableFiles()
+		saveToFile(results, 2)
 		drawPixelGraphs()
-		variableSearchGraph(heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
+		variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
 
-# loadSingleVariableFiles()
-# saveToFile(2)
+# results = loadSingleVariableFiles()
+# saveToFile(results, 2)
 # drawPixelGraphs()
-# variableSearchGraph(heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
+# variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
 runMultiple()
