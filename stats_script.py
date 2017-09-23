@@ -78,7 +78,7 @@ def getFeatureNum(fileName):
 	fileName = fileName[fileName.find('_')+1:]
 	return int(fileName[:fileName.find('_')])
 
-def loadCGFiles():
+def loadCGFiles(inputPath):
 	results = []
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
@@ -108,7 +108,7 @@ def loadCGFiles():
 		results.append(result)
 	return results
 
-def loadSingleVariableFiles():
+def loadSingleVariableFiles(inputPath):
 	results = []
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
@@ -441,7 +441,7 @@ def drawPixelGraph(numList, colorList, filePath):
 	assert not os.path.isfile(filePath)
 	img.save(filePath)
 
-def drawPixelGraphs():
+def drawPixelGraphs(inputPath):
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
 	for filePath in filePaths:		
@@ -551,13 +551,13 @@ def runMultiple():
 		inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
 		outputPath = inputPath + 'stats/'
 		
-		results = loadSingleVariableFiles()
+		results = loadSingleVariableFiles(inputPath)
 		saveToFile(results, 2)
-		drawPixelGraphs()
+		drawPixelGraphs(inputPath)
 		variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
 
-# results = loadSingleVariableFiles()
+# results = loadSingleVariableFilesinputPath()
 # saveToFile(results, 2)
-# drawPixelGraphs()
+# drawPixelGraphs(inputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
 runMultiple()
