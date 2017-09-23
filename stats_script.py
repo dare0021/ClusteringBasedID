@@ -546,20 +546,22 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 		plt.savefig(outputPath + variableName + '_h0.png', bbox_inches='tight')
 		plt.close()
 
-def asyncOp(inputPath, outputPath):
+def asyncOp(inputPath, outputPath, sema):
 	results = loadSingleVariableFiles(inputPath)
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
 	variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
+	sema.release()
 
 def runMultiple(parentDir, numThreads):
-	from multiprocessing import Pool
-	pool = Pool(processes = numThreads)
+	from threading import Thread, BoundedSemaphore
+	threadSemaphore = BoundedSemaphore(value=numThreads)
+
 	for di in [x[0] for x in os.walk(parentDir) if 'inferred' in x[0]]:
+		threadSemaphore.acquire()
 		print 'Launching async instance for:', di
-		pool.apply_async(asyncOp(di + '/', di + '/stats/'))
-	pool.close()
-	pool.join()
+		p = Thread(target=asyncOp, args=(di + '/', di + '/stats/', threadSemaphore))
+		p.start()
 
 
 # inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
@@ -568,4 +570,5 @@ def runMultiple(parentDir, numThreads):
 # saveToFile(results, outputPath, 2)
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/", numThreads)
+# runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/", numThreads)
+runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/", numThreads)
