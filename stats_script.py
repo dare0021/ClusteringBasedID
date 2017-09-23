@@ -546,7 +546,7 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 
 def runMultiple():
 	for di in [x[0] for x in os.walk(inputPath) if 'inferred' in x]:
-		inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
+		inputPath = di
 		outputPath = inputPath + 'stats/'
 		
 		results = loadSingleVariableFiles(inputPath)
