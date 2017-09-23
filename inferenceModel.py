@@ -17,9 +17,10 @@ fuzzyness = 0.1
 decay = 1.0/2
 verbose = False
 saveOutputFrames = True
+# file output processes
+pool = Pool(processes = 4)
 
 results = []
-pool = Pool(processes = 4)
 
 class Result:
 	def __init__(self, filename, accuracy, f1, rawOutput, groundTruth):
