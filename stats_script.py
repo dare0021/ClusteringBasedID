@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
+from threading import Thread, BoundedSemaphore, Lock
 
 silence = True
 pixelGraphZoom = 5
@@ -12,12 +13,14 @@ tfColors = [(225,90,90),(20,230,40),(255,255,255)]
 # TP FP FN TN Padding
 compColors = [(20,230,40),(225,90,90),(240,240,60),(90,175,240),(255,255,255)]
 
+pltLock = Lock()
 # np.seterr(invalid='raise')
 for i in range(9, 22):
 	PAAFeatureVectors.append('MFCC ' + str(i))
 for i in range(22, 34):
 	PAAFeatureVectors.append('Chroma Vector ' + str(i))
 PAAFeatureVectors.append('Chroma Deviation')
+threadSemaphore = BoundedSemaphore(value=numThreads)
 
 class Result:
 	# param order same as file name
@@ -277,6 +280,7 @@ def saveStats(f, accuracies, f1s, outputPath, plotFileNameStub=''):
 
 	if len(plotFileNameStub) > 0:
 		strlen = 7
+		pltLock.acquire()
 		plt.figure()
 		plt.subplot(121)
 		plt.ylim([0,1])
@@ -295,6 +299,7 @@ def saveStats(f, accuracies, f1s, outputPath, plotFileNameStub=''):
 		assert not os.path.isfile(outputPath + plotFileNameStub + '.png')
 		plt.savefig(outputPath + plotFileNameStub + '.png', bbox_inches='tight')
 		plt.close()
+		pltLock.release()
 
 def saveGrid(f, grid, cList, gList):
 	saveAndPrint(f, ' \t' + tabSepLst(gList) + '\n')
@@ -383,6 +388,7 @@ def saveToFile(results, outputPath, verbose=0):
 		f1s.append(result.f1)
 
 	assert not os.path.isdir(outputPath)
+
 	os.mkdir(outputPath)
 	f = open(outputPath + "summary.txt", 'w')
 	saveStats(f, accuracies, f1s, outputPath, 'summary')
@@ -507,6 +513,7 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 			v2.append(np.mean(f1s[key][True]))
 			v3.append(np.median(accs[key][True]))
 			v4.append(np.median(f1s[key][True]))
+		pltLock.acquire()
 		plt.figure()
 		plt.plot(keys, v1, label='Amean', color='#FF3030')
 		plt.plot(keys, v2, label='Fmean', color='#FF7070')
@@ -521,6 +528,7 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 		assert not os.path.isfile(outputPath + variableName + '_h1.png')
 		plt.savefig(outputPath + variableName + '_h1.png', bbox_inches='tight')
 		plt.close()
+		pltLock.release()
 	if heuristicsOn == 'Both' or heuristicsOn == False:
 		v1 = []
 		v2 = []
@@ -531,6 +539,7 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 			v2.append(np.mean(f1s[key][False]))
 			v3.append(np.median(accs[key][False]))
 			v4.append(np.median(f1s[key][False]))
+		pltLock.acquire()
 		plt.figure()
 		plt.plot(keys, v1, label='Amean', color='#FF3030')
 		plt.plot(keys, v2, label='Fmean', color='#FF7070')
@@ -545,22 +554,20 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 		assert not os.path.isfile(outputPath + variableName + '_h0.png')
 		plt.savefig(outputPath + variableName + '_h0.png', bbox_inches='tight')
 		plt.close()
+		pltLock.release()
 
-def asyncOp(inputPath, outputPath, sema):
+def asyncOp(inputPath, outputPath):
 	results = loadSingleVariableFiles(inputPath)
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
 	variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-	sema.release()
+	threadSemaphore.release()
 
-def runMultiple(parentDir, numThreads):
-	from threading import Thread, BoundedSemaphore
-	threadSemaphore = BoundedSemaphore(value=numThreads)
-
+def runMultiple(parentDir):
 	for di in [x[0] for x in os.walk(parentDir) if 'inferred' in x[0]]:
 		threadSemaphore.acquire()
 		print 'Launching async instance for:', di
-		p = Thread(target=asyncOp, args=(di + '/', di + '/stats/', threadSemaphore))
+		p = Thread(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
 
@@ -571,4 +578,4 @@ def runMultiple(parentDir, numThreads):
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 # runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/", numThreads)
-runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/", numThreads)
+runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/")
