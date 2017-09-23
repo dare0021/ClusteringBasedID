@@ -141,6 +141,6 @@ def automatedSearch(fuzzRange, decayRange):
 automatedSearch([0.0], [16.0/16, 7.0/8, 3.0/4, 1.0/2, 1.0/4, 1.0/8, 1.0/16])
 
 print 'Waiting for file IO...'
-pool.terminate()
+pool.close()
 pool.join()
 print 'Done'
