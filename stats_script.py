@@ -153,7 +153,7 @@ def listFind(lst, item):
 		retval += 1
 	return None
 
-def saveBySpeaker(f, results):
+def saveBySpeaker(f, results, outputPath):
 	accs = dict()
 	f1s = dict()
 
@@ -165,7 +165,7 @@ def saveBySpeaker(f, results):
 	f.write('Stats by Speaker\n')
 	for speaker in accs.keys():
 		saveAndPrint(f, kvpDisp('Speaker', speaker))
-		saveStats(f, accs[speaker], f1s[speaker], 'Speaker_' + speaker)
+		saveStats(f, accs[speaker], f1s[speaker], outputPath, 'Speaker_' + speaker)
 		f.write('\n')
 
 def getListWithMaxFirstElement(kvp1, kvp2):
@@ -173,7 +173,7 @@ def getListWithMaxFirstElement(kvp1, kvp2):
 		return kvp1
 	return kvp2
 
-def saveByFeature(f, results):
+def saveByFeature(f, results, outputPath):
 	accs = dict()
 	f1s = dict()
 
@@ -189,7 +189,7 @@ def saveByFeature(f, results):
 	f.write('Stats by Feature\n')
 	for fv in accs.keys():
 		saveAndPrint(f, kvpDisp('Feature', fv))
-		saveStats(f, accs[fv], f1s[fv], 'Feature_' + fv)
+		saveStats(f, accs[fv], f1s[fv], outputPath, 'Feature_' + fv)
 		f.write('\n')
 		accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[fv]), fv))
 		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[fv]), fv))
@@ -201,7 +201,7 @@ def saveByFeature(f, results):
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
 	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
-def saveByModel(f, results):
+def saveByModel(f, results, outputPath):
 	accs = dict()
 	f1s = dict()
 
@@ -217,7 +217,7 @@ def saveByModel(f, results):
 	f.write('Stats by Model\n')
 	for md in accs.keys():
 		saveAndPrint(f, kvpDisp('Model', md))
-		saveStats(f, accs[md], f1s[md], 'Model_'+md)
+		saveStats(f, accs[md], f1s[md], outputPath, 'Model_'+md)
 		f.write('\n')
 		accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[md]), md))
 		accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md]), md))
@@ -228,7 +228,7 @@ def saveByModel(f, results):
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
 	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
-def saveByCombination(f, results):
+def saveByCombination(f, results, outputPath):
 	# Are nested dicts a good idea? Who knows? 
 	accs = dict()
 	f1s = dict()
@@ -250,7 +250,7 @@ def saveByCombination(f, results):
 		for fv in accs[md].keys():
 			saveAndPrint(f, kvpDisp('Model', md))
 			saveAndPrint(f, kvpDisp('Feature', fv))
-			saveStats(f, accs[md][fv], f1s[md][fv], 'Comb_'+md + ' + ' +fv)
+			saveStats(f, accs[md][fv], f1s[md][fv], outputPath, 'Comb_'+md + ' + ' +fv)
 			f.write('\n')
 			accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (np.mean(accs[md][fv]), md + ' + ' + fv))
 			accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (np.median(accs[md][fv]), md + ' + ' + fv))
@@ -261,7 +261,7 @@ def saveByCombination(f, results):
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
 	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
-def saveStats(f, accuracies, f1s, plotFileNameStub=''):
+def saveStats(f, accuracies, f1s, outputPath, plotFileNameStub=''):
 	saveAndPrint(f, kvpDisp('Accuracy mean', np.mean(accuracies)))
 	saveAndPrint(f, kvpDisp('Accuracy min ', np.min(accuracies)))
 	saveAndPrint(f, kvpDisp('Accuracy max ', np.max(accuracies)))
@@ -301,7 +301,7 @@ def saveGrid(f, grid, cList, gList):
 		saveAndPrint(f, str(cList[gLoc]) + '\t' + tabSepLst(gSub) + '\n')
 		gLoc += 1
 
-def saveCGgrid(f, results):
+def saveCGgrid(f, results, outputPath):
 	accs = dict()
 	f1s = dict()
 
@@ -334,7 +334,7 @@ def saveCGgrid(f, results):
 		for g in accs[c].keys():
 			saveAndPrint(f, kvpDisp('c', c))
 			saveAndPrint(f, kvpDisp('g', g))
-			saveStats(f, accs[c][g], f1s[c][g], 'Comb_'+str(c) + ' + ' +str(g))
+			saveStats(f, accs[c][g], f1s[c][g], outputPath, 'Comb_'+str(c) + ' + ' +str(g))
 			f.write('\n')
 			amean = np.mean(accs[c][g])
 			amed = np.median(accs[c][g])
@@ -372,7 +372,7 @@ def saveCGgrid(f, results):
 	saveGrid(csv, fmedGrid, cList, gList)
 	csv.close()
 
-def saveToFile(results, verbose=0):
+def saveToFile(results, outputPath, verbose=0):
 	accuracies = []
 	f1s = []
 
@@ -383,25 +383,25 @@ def saveToFile(results, verbose=0):
 	assert not os.path.isdir(outputPath)
 	os.mkdir(outputPath)
 	f = open(outputPath + "summary.txt", 'w')
-	saveStats(f, accuracies, f1s, 'summary')
+	saveStats(f, accuracies, f1s, outputPath, 'summary')
 
 	if results[0].type == 'Result':
 		# by broad categories
 		if verbose > 0:
-			saveBySpeaker(f)
+			saveBySpeaker(f, results, outputPath)
 			f.write("\n")
-			saveByFeature(f)
+			saveByFeature(f, results, outputPath)
 			f.write("\n")
-			saveByModel(f)
+			saveByModel(f, results, outputPath)
 			f.write('\n')
 
 		# by specific combinations of feature vector & model
 		if verbose > 1:
-			saveByCombination(f)
+			saveByCombination(f, results, outputPath)
 			f.write('\n')
 	elif results[0].type == 'CGResult':
 		if verbose > 0:
-			saveCGgrid(f)
+			saveCGgrid(f, results, outputPath)
 			f.write('\n')
 	else:
 		print "stats_script.saveToFile() failed with input:", results[0]
@@ -441,7 +441,7 @@ def drawPixelGraph(numList, colorList, filePath):
 	assert not os.path.isfile(filePath)
 	img.save(filePath)
 
-def drawPixelGraphs(inputPath):
+def drawPixelGraphs(inputPath, outputPath):
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
 	for filePath in filePaths:		
@@ -472,7 +472,7 @@ def getComparisonList(predList, trueList):
 				retval[i] = 2
 	return retval
 
-def variableSearchGraph(results, variableMarker, variableName, heuristicsOn = "Both"):
+def variableSearchGraph(results, variableMarker, variableName, outputPath, heuristicsOn = "Both"):
 	accs = dict()
 	f1s = dict()
 	for result in results:
@@ -546,18 +546,16 @@ def variableSearchGraph(results, variableMarker, variableName, heuristicsOn = "B
 
 def runMultiple():
 	for di in [x[0] for x in os.walk(inputPath) if 'inferred' in x]:
-		global inputPath
-		global outputPath
 		inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
 		outputPath = inputPath + 'stats/'
 		
 		results = loadSingleVariableFiles(inputPath)
-		saveToFile(results, 2)
-		drawPixelGraphs(inputPath)
-		variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
+		saveToFile(results, outputPath, 2)
+		drawPixelGraphs(inputPath, outputPath)
+		variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 
 # results = loadSingleVariableFilesinputPath()
-# saveToFile(results, 2)
-# drawPixelGraphs(inputPath)
-# variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g')
+# saveToFile(results, outputPath, 2)
+# drawPixelGraphs(inputPath, outputPath)
+# variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 runMultiple()
