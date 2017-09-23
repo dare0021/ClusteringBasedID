@@ -4,9 +4,9 @@
 import os
 import ast
 import numpy as np
-from multiprocessing import Pool
+from threading import Thread, BoundedSemaphore
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/"
 outputPath = inputPath + "inferred/"
 
 # resistance to change
@@ -18,9 +18,10 @@ decay = 1.0/2
 verbose = False
 saveOutputFrames = True
 # file output processes
-pool = Pool(processes = 4)
+numThreads = 4
 
 results = []
+threadSemaphore = BoundedSemaphore(value=numThreads)
 
 class Result:
 	def __init__(self, filename, accuracy, f1, rawOutput, groundTruth):
@@ -64,9 +65,18 @@ def checkCrossover(weighedAverage, currentOutput):
 
 # async write to file
 def writeToFile(path, content):
-	f = open(path, 'w')
-	f.write(content)
-	f.close()
+	global threadSemaphore
+	def asyncWTF(path, content):		
+		global threadSemaphore
+		f = open(path, 'w')
+		f.write(content)
+		f.close()
+		threadSemaphore.release()
+
+	threadSemaphore.acquire()
+	p = Thread(target=asyncWTF, args=(path, content))
+	p.start()
+
 
 # assumes input is 0 or 1
 def processResults():
@@ -118,7 +128,7 @@ def processResults():
 		if saveOutputFrames:
 			content += str(outputArray) + '\n'
 			content += str(result.groundTruth) + '\n'
-		pool.apply_async(writeToFile(outputPath + result.filename, content))
+		writeToFile(outputPath + result.filename, content)
 
 def automatedSearch(fuzzRange, decayRange):
 	global outputPath
@@ -140,8 +150,3 @@ def automatedSearch(fuzzRange, decayRange):
 # processResults()
 # np.arange(0.0, 0.4, 0.01)
 automatedSearch([0.0], [16.0/16, 7.0/8, 3.0/4, 1.0/2, 1.0/4, 1.0/8, 1.0/16])
-
-print 'Waiting for file IO...'
-pool.close()
-pool.join()
-print 'Done'
