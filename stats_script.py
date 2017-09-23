@@ -3,10 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
-outputPath = inputPath + 'stats/'
 pixelGraphZoom = 5
-
+numThreads = 4
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
 PAAFeatureVectors = ['Zero Crossing Rate', 'Energy', 'Entropy of Energy', 'Spectral Centroid', 'Spectral Spread', 'Spectral Entropy', 'Spectral Flux', 'Spectral Rolloff']
 tfColors = [(225,90,90),(20,230,40),(255,255,255)]
@@ -544,18 +542,26 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 		plt.savefig(outputPath + variableName + '_h0.png', bbox_inches='tight')
 		plt.close()
 
-def runMultiple():
-	for di in [x[0] for x in os.walk(inputPath) if 'inferred' in x]:
-		inputPath = di
-		outputPath = inputPath + 'stats/'
-		
-		results = loadSingleVariableFiles(inputPath)
-		saveToFile(results, outputPath, 2)
-		drawPixelGraphs(inputPath, outputPath)
-		variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
+def asyncOp(inputPath, outputPath):
+	results = loadSingleVariableFiles(inputPath)
+	saveToFile(results, outputPath, 2)
+	drawPixelGraphs(inputPath, outputPath)
+	variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 
+def runMultiple(parentDir, numThreads):
+	from multiprocessing import Pool
+	pool = Pool(processes = numThreads)
+	for di in [x[0] for x in os.walk(parentDir) if 'inferred' in x[0]]:
+		print 'Launching async instance for:', di
+		pool.apply_async(asyncOp(di, di + 'stats/'))
+	pool.close()
+	pool.join()
+
+
+# inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
+# outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFilesinputPath()
 # saveToFile(results, outputPath, 2)
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-runMultiple()
+runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/", numThreads)
