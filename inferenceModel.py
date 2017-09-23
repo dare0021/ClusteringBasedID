@@ -6,7 +6,7 @@ import ast
 import numpy as np
 from multiprocessing import Pool
 
-inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
 outputPath = inputPath + "inferred/"
 
 # resistance to change
@@ -16,7 +16,7 @@ fuzzyness = 0.1
 # lower decay means more inertia
 decay = 1.0/2
 verbose = False
-saveOutputFrames = False
+saveOutputFrames = True
 
 results = []
 pool = Pool(processes = 4)
@@ -137,8 +137,10 @@ def automatedSearch(fuzzRange, decayRange):
 
 # loadFiles()
 # processResults()
-automatedSearch(np.arange(0.0, 0.4, 0.01), [1.0/2, 1.0/4, 1.0/8, 1.0/16, 1.0/32])
+# np.arange(0.0, 0.4, 0.01)
+automatedSearch([0.0], [16.0/16, 7.0/8, 3.0/4, 1.0/2, 1.0/4, 1.0/8, 1.0/16])
 
 print 'Waiting for file IO...'
+pool.terminate()
 pool.join()
 print 'Done'
