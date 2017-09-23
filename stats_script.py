@@ -553,7 +553,7 @@ def runMultiple(parentDir, numThreads):
 	pool = Pool(processes = numThreads)
 	for di in [x[0] for x in os.walk(parentDir) if 'inferred' in x[0]]:
 		print 'Launching async instance for:', di
-		pool.apply_async(asyncOp(di, di + 'stats/'))
+		pool.apply_async(asyncOp(di + '/', di + '/stats/'))
 	pool.close()
 	pool.join()
 
