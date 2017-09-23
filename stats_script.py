@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 
+silence = True
 pixelGraphZoom = 5
 numThreads = 4
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -65,7 +66,8 @@ def tabSepLst(lst):
 	return retval[:len(retval)-1]
 
 def saveAndPrint(f, s):
-	print s
+	if not silence:
+		print s
 	f.write(s)
 
 def getAlgoName(fileName):
@@ -102,7 +104,8 @@ def loadCGFiles(inputPath):
 			os.exit
 		fileNum = fileName[fileName.find('_g_')+1:fileName.rfind('_')]
 		result = CGResult(fileNum, accuracy, f1, c, g)
-		print result
+		if not silence:
+			print result
 		results.append(result)
 	return results
 
@@ -133,7 +136,8 @@ def loadSingleVariableFiles(inputPath):
 		fileNum = int(fileName[fileName.find(algorithm)+len(algorithm)+1:fileName.rfind('_')])
 		speaker = fileName[fileName.rfind('_')+1:len(fileName)-4]
 		result = Result(featureVector, algorithm, fileNum, speaker, accuracy, f1)
-		print result
+		if not silence:
+			print result
 		results.append(result)
 	return results
 
