@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
 from threading import Thread, BoundedSemaphore, Lock
+import time
 
 silence = True
 pixelGraphZoom = 5
@@ -563,6 +564,11 @@ def asyncOp(inputPath, outputPath):
 	variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 	threadSemaphore.release()
 
+# causes error on exit
+# ../src/unix/threadpsx.cpp(1787): assert "wxThread::IsMain()" failed in OnExit(): only main thread can be here [in thread 7f6188876700]
+# ../src/common/socket.cpp(767): assert "wxIsMainThread()" failed in IsInitialized(): unsafe to call from other threads [in thread 7f6188876700]
+# likely due to the main thread exiting before the child threads
+# there's (probably) no problems in the correctness of the output
 def runMultiple(parentDir):
 	for di in [x[0] for x in os.walk(parentDir) if 'inferred' in x[0]]:
 		threadSemaphore.acquire()
@@ -577,5 +583,5 @@ def runMultiple(parentDir):
 # saveToFile(results, outputPath, 2)
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-# runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/", numThreads)
-runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/")
+runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/")
+# runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/")
