@@ -4,13 +4,14 @@ inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx 
 
 class Result:
 	# param order same as file name
-	def __init__(self, accmean, f1mean, rawString):
+	def __init__(self, accmean, f1mean, rawString, identifier):
 		self.accmean = accmean
 		self.f1mean = f1mean
 		self.rawString = rawString
+		self.identifier = identifier
 
 	def __str__(self):
-		return self.rawString
+		return self.identifier + '\n' + self.rawString
 
 def parseKVP(s):
 	return (s[:s.find(':')].strip(), float(s[s.find(':')+2:]))
@@ -26,15 +27,15 @@ def readFile(path):
 	garbage, f1mean = parseKVP(s)
 	f.close()
 	rawString += s
-	return Result(accmean, f1mean, rawString)
+	path = path[:path.rfind('/')]
+	path = path[:path.rfind('/')]
+	path = path[path.rfind('/')+1:]
+	return Result(accmean, f1mean, rawString, path)
 
 def loadFiles(parentDir):
 	results = []
-	i = 0
-	for di in [x[0] for x in os.walk(parentDir) if 'inferred' in x[0]]:
-		i += 1
-		# results.append(readFile(di + "stats/summary.txt"))
-	print i
+	for di in [x[0] for x in os.walk(parentDir) if ('inferred' in x[0] and 'stats' in x[0])]:
+		results.append(readFile(di + "/summary.txt"))
 	return results
 
 def printMax(results, outputPath):
@@ -61,3 +62,5 @@ def printMax(results, outputPath):
 	# compose string of the max and their file contents as saved in the Result object
 	# print and save to file
 
+results = loadFiles(inputPath)
+printMax(results, '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/inf stats.txt')
