@@ -147,7 +147,7 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 		    rng_state = np.random.get_state()
 		    np.random.shuffle(data)
 		    np.random.set_state(rng_state)
-		    np.random.shuffle(groundTruths)
+		    np.random.shuffle(groundTruths[speaker])
 		for i in range(len(data)):
 			x.extend(data[i])
 			y.extend(groundTruths[speaker][i])
