@@ -10,7 +10,7 @@ import modelStorage as mds
 
 
 # primary inputs
-inputPath = "/home/jkih/Music/sukwoo/"
+inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
 manualTrainTestSet = False
 trainLabels = ["joo"]
 testLabels = ['kim', 'lee', 'seo', 'yoon']
@@ -131,7 +131,7 @@ def loadWAVwithPAA(inputPath, paaFunction):
 		storeFeature(sid, data, filePath)
 
 # returns: feature vector array (2D), ground truth array (1D)
-def collateData(speakerList, divider = None, subtractor = None):
+def collateData(speakerList, divider = None, subtractor = None, shuffle = False):
 	x = []
 	y = []
 
@@ -143,6 +143,11 @@ def collateData(speakerList, divider = None, subtractor = None):
 			print featureVectors.keys()
 			print groundTruths.keys()
 			assert False
+		if shuffle:
+		    rng_state = np.random.get_state()
+		    np.random.shuffle(data)
+		    np.random.set_state(rng_state)
+		    np.random.shuffle(groundTruths)
 		for i in range(len(data)):
 			x.extend(data[i])
 			y.extend(groundTruths[speaker][i])
@@ -166,16 +171,16 @@ def collateData(speakerList, divider = None, subtractor = None):
 
 def getSubset():
 	if manualTrainTestSet:
-		trainFeatureVector, trainTruthVector, datA, datB = collateData(trainLabels)
-		testFeatureVector, testTruthVector, datA, datB = collateData(testLabels, datA, datB)
+		trainFeatureVector, trainTruthVector, datA, datB = collateData(trainLabels, shuffle = True)
+		testFeatureVector, testTruthVector, datA, datB = collateData(testLabels, datA, datB, True)
 	else:
 		global lastSpeaker
 		testSpeaker = lastSpeaker + 1
 		if testSpeaker >= len(featureVectors.keys()):
 			testSpeaker = 0
 		speakers = featureVectors.keys()
-		trainFeatureVector, trainTruthVector, datA, datB = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]])
-		testFeatureVector, testTruthVector, datA, datB = collateData([speakers[testSpeaker]], datA, datB)
+		trainFeatureVector, trainTruthVector, datA, datB = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]], shuffle = True)
+		testFeatureVector, testTruthVector, datA, datB = collateData([speakers[testSpeaker]], datA, datB, True)
 
 		lastSpeaker = testSpeaker
 		print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
@@ -275,10 +280,11 @@ def runRBFvariants():
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
-		mds.runRBFvariantsGamma(ms, np.arange(0.01, 0.5, 0.01), i, iterlen)
+		mds.runRBFvariantsGamma(ms, np.arange(0.001, 0.1, 0.001), i, iterlen)
 		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284], i, iterlen)
 		# mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
 		# mds.runRBFvariantsCList(ms, [1], 0.03, i, iterlen)
+
 
 mds.init(threadSemaphore, modelProcess)
 # runPaaFunctions()
