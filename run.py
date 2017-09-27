@@ -15,7 +15,7 @@ manualTrainTestSet = False
 trainLabels = ["joo"]
 testLabels = ['kim', 'lee', 'seo', 'yoon']
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 10
+numSets = 3
 numThreads = 4
 
 # pAA settings 
@@ -70,11 +70,11 @@ def recallCalc(test, truth):
 def validateNormalization(featureVector):
 	for mean in featureVector.mean(axis=0):
 		if forgivingFloatEquivalence(mean, 0):
-			print "WARN: validationNormalization failed with mean " + str(mean)
+			print "WARN: validateNormalization failed with mean " + str(mean)
 			return False
 	for stdv in featureVector.std(axis=0):
 		if forgivingFloatEquivalence(stdv, 1):
-			print "WARN: validationNormalization failed with stddev " + str(stdv)
+			print "WARN: validateNormalization failed with stddev " + str(stdv)
 			return False
 	return True
 
