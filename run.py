@@ -132,6 +132,11 @@ def loadWAVwithPAA(inputPath, paaFunction):
 
 # returns: feature vector array (2D), ground truth array (1D)
 def collateData(speakerList, divider = None, subtractor = None, shuffle = False):
+	def reduceArrDimension(a):
+		retval = []
+		for iter in a:
+			retval.extend(iter)
+		return retval
 	x = []
 	y = []
 
@@ -143,14 +148,19 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 			print featureVectors.keys()
 			print groundTruths.keys()
 			assert False
-		if shuffle:
-		    rng_state = np.random.get_state()
-		    np.random.shuffle(data)
-		    np.random.set_state(rng_state)
-		    np.random.shuffle(groundTruths[speaker])
 		for i in range(len(data)):
-			x.extend(data[i])
-			y.extend(groundTruths[speaker][i])
+			x.append(data[i])
+			y.append(groundTruths[speaker][i])
+
+
+	if shuffle:
+	    rng_state = np.random.get_state()
+	    np.random.shuffle(x)
+	    np.random.set_state(rng_state)
+	    np.random.shuffle(y)
+
+	x = reduceArrDimension(x)
+	y = reduceArrDimension(y)
 
 	sklSS = sklearn.preprocessing.StandardScaler()
 	if divider == None:
