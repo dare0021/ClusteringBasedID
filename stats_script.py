@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image as imaging
-from threading import Thread, BoundedSemaphore, Lock
+from multiprocessing import Process, BoundedSemaphore
 import time
 
 silence = True
@@ -14,7 +14,6 @@ tfColors = [(225,90,90),(20,230,40),(255,255,255)]
 # TP FP FN TN Padding
 compColors = [(20,230,40),(225,90,90),(240,240,60),(90,175,240),(255,255,255)]
 
-pltLock = Lock()
 # np.seterr(invalid='raise')
 for i in range(9, 22):
 	PAAFeatureVectors.append('MFCC ' + str(i))
@@ -281,7 +280,6 @@ def saveStats(f, accuracies, f1s, outputPath, plotFileNameStub=''):
 
 	if len(plotFileNameStub) > 0:
 		strlen = 7
-		pltLock.acquire()
 		plt.figure()
 		plt.subplot(121)
 		plt.ylim([0,1])
@@ -300,7 +298,6 @@ def saveStats(f, accuracies, f1s, outputPath, plotFileNameStub=''):
 		assert not os.path.isfile(outputPath + plotFileNameStub + '.png')
 		plt.savefig(outputPath + plotFileNameStub + '.png', bbox_inches='tight')
 		plt.close()
-		pltLock.release()
 
 def saveGrid(f, grid, cList, gList):
 	saveAndPrint(f, ' \t' + tabSepLst(gList) + '\n')
@@ -514,7 +511,6 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 			v2.append(np.mean(f1s[key][True]))
 			v3.append(np.median(accs[key][True]))
 			v4.append(np.median(f1s[key][True]))
-		pltLock.acquire()
 		plt.figure()
 		plt.plot(keys, v1, label='Amean', color='#FF3030')
 		plt.plot(keys, v2, label='Fmean', color='#FF7070')
@@ -529,7 +525,6 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 		assert not os.path.isfile(outputPath + variableName + '_h1.png')
 		plt.savefig(outputPath + variableName + '_h1.png', bbox_inches='tight')
 		plt.close()
-		pltLock.release()
 	if heuristicsOn == 'Both' or heuristicsOn == False:
 		v1 = []
 		v2 = []
@@ -540,7 +535,6 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 			v2.append(np.mean(f1s[key][False]))
 			v3.append(np.median(accs[key][False]))
 			v4.append(np.median(f1s[key][False]))
-		pltLock.acquire()
 		plt.figure()
 		plt.plot(keys, v1, label='Amean', color='#FF3030')
 		plt.plot(keys, v2, label='Fmean', color='#FF7070')
@@ -555,9 +549,12 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 		assert not os.path.isfile(outputPath + variableName + '_h0.png')
 		plt.savefig(outputPath + variableName + '_h0.png', bbox_inches='tight')
 		plt.close()
-		pltLock.release()
 
 def asyncOp(inputPath, outputPath):
+	if os.path.isdir(outputPath):
+		print "WARN: output path" + outputPath + "already exists; skipping"
+		threadSemaphore.release()
+		return
 	results = loadSingleVariableFiles(inputPath)
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
@@ -570,18 +567,17 @@ def asyncOp(inputPath, outputPath):
 # likely due to the main thread exiting before the child threads
 # there's (probably) no problems in the correctness of the output
 def runMultiple(parentDir):
-	for di in [x[0] for x in os.walk(parentDir) if 'inferred' in x[0]]:
+	for di in [x[0] for x in os.walk(parentDir) if ('inferred' in x[0] and not ('stats' in x[0]))]:
 		threadSemaphore.acquire()
 		print 'Launching async instance for:', di
-		p = Thread(target=asyncOp, args=(di + '/', di + '/stats/'))
+		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-
-# inputPath = "/home/jkih/Music/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
+# inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/"
 # outputPath = inputPath + 'stats/'
-# results = loadSingleVariableFilesinputPath()
+# results = loadSingleVariableFiles(inputPath)
 # saveToFile(results, outputPath, 2)
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/")
+runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/")
 # runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/")

@@ -290,7 +290,7 @@ def runRBFvariants():
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
-		mds.runRBFvariantsGamma(ms, np.arange(0.001, 0.1, 0.001), i, iterlen)
+		mds.runRBFvariantsGamma(ms, np.arange(0.001, 0.1, 0.002), i, iterlen)
 		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284], i, iterlen)
 		# mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
 		# mds.runRBFvariantsCList(ms, [1], 0.03, i, iterlen)

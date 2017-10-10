@@ -1,6 +1,6 @@
 import os
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/"
 
 class Result:
 	# param order same as file name
@@ -35,6 +35,7 @@ def readFile(path):
 def loadFiles(parentDir):
 	results = []
 	for di in [x[0] for x in os.walk(parentDir) if ('inferred' in x[0] and 'stats' in x[0])]:
+		print di
 		results.append(readFile(di + "/summary.txt"))
 	return results
 
@@ -63,4 +64,4 @@ def printMax(results, outputPath):
 	# print and save to file
 
 results = loadFiles(inputPath)
-printMax(results, '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/Sphinx SVM_RBF g search 0.001 0.1 0.001 non-clairvoyant/inf stats.txt')
+printMax(results, '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/inf stats.txt')

@@ -6,7 +6,7 @@ import ast
 import numpy as np
 from threading import Thread, BoundedSemaphore
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/codetest/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/"
 outputPath = inputPath + "inferred/"
 
 # resistance to change
@@ -148,5 +148,5 @@ def automatedSearch(fuzzRange, decayRange):
 
 # loadFiles()
 # processResults()
-# np.arange(0.0, 0.4, 0.01)
-automatedSearch([0.0], [16.0/16, 7.0/8, 3.0/4, 1.0/2, 1.0/4, 1.0/8, 1.0/16])
+
+automatedSearch(np.arange(0.01, 0.4, 0.01), [16.0/16, 7.0/8, 3.0/4, 1.0/2, 1.0/4, 1.0/8, 1.0/16])
