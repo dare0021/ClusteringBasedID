@@ -149,4 +149,4 @@ def automatedSearch(fuzzRange, decayRange):
 # loadFiles()
 # processResults()
 
-automatedSearch(np.arange(0.01, 0.4, 0.01), [16.0/16, 7.0/8, 3.0/4, 1.0/2, 1.0/4, 1.0/8, 1.0/16])
+automatedSearch(np.arange(0.39, 0.5, 0.01), [1.0/8, 1.0/16, 1.0/32, 1.0/64, 1.0/128, 1.0/256])
