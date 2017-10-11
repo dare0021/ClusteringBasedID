@@ -1,7 +1,5 @@
 import os
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/"
-
 class Result:
 	# param order same as file name
 	def __init__(self, accmean, f1mean, rawString, identifier):
@@ -114,6 +112,7 @@ def printMax(results, outputPath):
 
 	f.close()
 
+# inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/"
+inputPath = '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/f 0 0.4 0.01 d 16/'
 results = loadFiles(inputPath)
-# printMax(results, '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/inf stats.txt')
-printMax(results, '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/f 0 0.4 0.01 d 16/inf stats.txt')
+printMax(results, inputPath + 'inf stats.txt')
