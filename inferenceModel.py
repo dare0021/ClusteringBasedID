@@ -112,9 +112,15 @@ def processResults():
 					tn += 1
 
 		accuracy = float(tp + tn) / len(predicted)
-		recall = float(tp) / (tp + fn)
-		precision = float(tp) / (tp + fp)
-		f1 = 2.0 * precision * recall / (precision + recall)
+		recall = 0
+		precision = 0
+		f1 = 0
+		if tp  != 0:
+			recall = float(tp) / (tp + fn)
+			precision = float(tp) / (tp + fp)
+			f1 = 2.0 * precision * recall / (precision + recall)
+		else:
+			print "WARN: tp == 0 @ " + result.filename
 
 		if verbose:
 			print result
@@ -149,4 +155,4 @@ def automatedSearch(fuzzRange, decayRange):
 # loadFiles()
 # processResults()
 
-automatedSearch(np.arange(0.39, 0.5, 0.01), [1.0/8, 1.0/16, 1.0/32, 1.0/64, 1.0/128, 1.0/256])
+automatedSearch(np.arange(0.41, 0.5, 0.01), [1.0/8, 1.0/16, 1.0/32, 1.0/64, 1.0/128, 1.0/256])
