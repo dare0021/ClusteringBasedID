@@ -61,12 +61,14 @@ def generatePixelGraph(numList, colorList, filePath):
 		return colorList[num]
 
 	pxs = []
+	lastStamp = 0
 	for i in numList:
-		for j in range(i[0]):
-			pxs.append(numToColor(i[1]))
-	pxs = np.array([pxs])
+		pxs.extend(np.tile(numToColor(i[1]), (i[0]-lastStamp, 1)))
+		lastStamp = i[0]
+	pxs = np.array([pxs], dtype='uint8')
+	print pxs.shape
 	img = imaging.fromarray(pxs, 'RGB')
-	img = img.resize((len(pxs) * pixelGraphZoom, pixelGraphZoom))
+	img = img.resize((1000, pixelGraphZoom))
 	img.save(filePath)
 
 # check last tag != this tag
