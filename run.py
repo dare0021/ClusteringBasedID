@@ -194,7 +194,7 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 	sklSS.mean_ = subtractor
 	x = sklSS.transform(x)
 	if not validateNormalization(x):
-		print "WARN: data not normalized for speakers " + str(speakerList)
+		print "WARN: data not normalized for the manual test set"
 		print "divider", divider
 		print "subtractor", subtractor
 
@@ -314,7 +314,7 @@ def runRBFvariants():
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
-		mds.runRBFvariantsGamma(ms, 0.015, i, iterlen)
+		mds.runRBFvariantsGamma(ms, [0.015], i, iterlen)
 		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284], i, iterlen)
 		# mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
 		# mds.runRBFvariantsCList(ms, [1], 0.03, i, iterlen)

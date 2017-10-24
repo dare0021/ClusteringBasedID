@@ -48,7 +48,6 @@ def saveOutput(outputPath, outBuff):
 	fo.write(writeBuff)
 	fo.close()
 
-# VERY BROKEN
 def generatePixelGraph(numList, colorList, filePath):
 	def numToColor(num):
 		if num == 'M':
@@ -70,11 +69,6 @@ def generatePixelGraph(numList, colorList, filePath):
 	img = imaging.fromarray(pxs, 'RGB')
 	img = img.resize((1000, pixelGraphZoom))
 	img.save(filePath)
-
-# check last tag != this tag
-# check last time < this time
-# generate truth graph?
-# generate sinfo file parameters?
 
 inputPath = 'joo proc pass 3.wav.diarization'
 outputPath = inputPath + '.comp'

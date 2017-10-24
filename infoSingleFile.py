@@ -27,7 +27,6 @@ def init(compFilePath, dataLen):
 		time, speaker = s.split()
 		time = int(time)
 		count = round(multiplier * (time - lastTime))
-		print count, time, lastTime
 		if speaker == 'M':
 			speaker = 0
 		elif speaker == 'C':
@@ -41,8 +40,10 @@ def init(compFilePath, dataLen):
 	compFile.close()
 	# rounding errors
 	if dataLen > len(lookup):
-		lookup[-1] = lookup[len(lookup)-2]
-	assert len(lookup) == dataLen
+		diff = dataLen - len(lookup)
+		for i in range(diff):
+			lookup.append(lookup[-1])
+	assert len(lookup) >= dataLen
 
 # returns whether the file path is for a male or female speaker
 # 0: Adult
