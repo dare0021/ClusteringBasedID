@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import speakerInfo as sinfo
+import infoSingleFile
 from unpackMFC import run as unmfc
 from pyAudioAnalysis import audioBasicIO, audioFeatureExtraction
 from datetime import datetime
@@ -11,9 +12,12 @@ import modelStorage as mds
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
-manualTrainTestSet = False
-trainLabels = ["joo"]
-testLabels = ['kim', 'lee', 'seo', 'yoon']
+manualTrainTestSet = True
+trainLabels = ['kim', 'lee', 'seo', 'yoon']
+testLabels = ['joo']
+# leave blank to ignore
+manualTestFile = "joo proc pass 3.wav.mfc"
+manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 3
 numThreads = 4
@@ -179,10 +183,30 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 			print "subtractor", subtractor
 	return x, y, sklSS.scale_, sklSS.mean_
 
+def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
+	if not (filePath in MfccCache.keys()):
+		MfccCache[filePath] = unmfc(filePath, featureVectorSize)
+		infoSingleFile.init(diarizationFilePath, len(MfccCache[filePath]))
+	x = MfccCache[filePath]
+
+	sklSS = sklearn.preprocessing.StandardScaler()
+	sklSS.scale_ = divider
+	sklSS.mean_ = subtractor
+	x = sklSS.transform(x)
+	if not validateNormalization(x):
+		print "WARN: data not normalized for speakers " + str(speakerList)
+		print "divider", divider
+		print "subtractor", subtractor
+
+	return x, infoSingleFile.getTruthValues()
+
 def getSubset():
 	if manualTrainTestSet:
 		trainFeatureVector, trainTruthVector, datA, datB = collateData(trainLabels, shuffle = True)
-		testFeatureVector, testTruthVector, datA, datB = collateData(testLabels, datA, datB, True)
+		if len(manualTestFile) > 0:
+			testFeatureVector, testTruthVector = loadManualTestFile(manualTestFile, manualTestDiaFilePath, datA, datB)
+		else:
+			testFeatureVector, testTruthVector, datA, datB = collateData(testLabels, datA, datB, True)
 	else:
 		global lastSpeaker
 		testSpeaker = lastSpeaker + 1
@@ -290,7 +314,7 @@ def runRBFvariants():
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
 		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
-		mds.runRBFvariantsGamma(ms, np.arange(0.001, 0.1, 0.002), i, iterlen)
+		mds.runRBFvariantsGamma(ms, 0.015, i, iterlen)
 		# mds.runRBFvariants2DList(ms, [1, 10, 50, 100], [50, 0.01, 0.02, 0.03, 0.04, 0.5, 2, .78125, .617284], i, iterlen)
 		# mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
 		# mds.runRBFvariantsCList(ms, [1], 0.03, i, iterlen)

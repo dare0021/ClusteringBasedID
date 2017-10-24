@@ -1,3 +1,4 @@
+import numpy as np
 # Contains information about the files being used
 # Separated out since 1) it's long, and 2) the code should change according to what files are used
 
@@ -5,37 +6,46 @@
 # a generator instead of a memory dump
 lookup = []
 
+def getLastTimestamp(f):
+	s = f.readline()
+	while (len(s) > 1):
+		ts, speaker = s.split()
+		s = f.readline()
+	# return to file.begin
+	f.seek(0, 0)
+	# scope? what scope?
+	return int(ts)
+
 # retrofit sinfo class
-def init(args):
-	compFile = open(args['compFile'], 'r')
-	dataLen = args['dataLen']
+def init(compFilePath, dataLen):
+	compFile = open(compFilePath, 'r')
 	# GET LASTTIMESTAMP FROM END OF FILE
-	multiplier = float(dataLen) / lastTimestamp
+	multiplier = float(dataLen) / getLastTimestamp(compFile)
 	s = compFile.readline()
 	lastTime = 0
 	while len(s) > 1:
 		time, speaker = s.split()
-		# ROUNDING!
-		count = int(multiplier * (time - lastTime))
-		# Create $count long array that countains that many number of 0 or 1
-		# extend, not append, to lookup
+		time = int(time)
+		count = round(multiplier * (time - lastTime))
+		print count, time, lastTime
+		if speaker == 'M':
+			speaker = 0
+		elif speaker == 'C':
+			speaker = 1
+		else:
+			print "ERR: Invalid speaker: " + speaker
+			assert False
+		lookup.extend(np.repeat(speaker, count))
 		s = compFile.readline()
-	# add an extra cell for rounding errors?
-	# but wont there be more accumulative errors than just 1?
+		lastTime = time
 	compFile.close()
+	# rounding errors
+	if dataLen > len(lookup):
+		lookup[-1] = lookup[len(lookup)-2]
+	assert len(lookup) == dataLen
 
 # returns whether the file path is for a male or female speaker
 # 0: Adult
 # 1: Child
-def getTruthValue(time)
-	return lookup[time]
-
-def getSpeakerID(time):
-	retval = ['A', 'C']
-	return retval[getTruthValue(time)]
-
-def getSIDKeyType():
-	return "string"
-
-def getNbClasses():
-	return 2
+def getTruthValues():
+	return lookup

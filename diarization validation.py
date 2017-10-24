@@ -1,5 +1,10 @@
+import numpy as np
+from PIL import Image as imaging
+import os
+
 # validates and compiles diarization file
 tfColors = [(225,90,90),(20,230,40),(255,255,255)]
+pixelGraphZoom = 5
 
 # The data is in decisecond resolution
 # What am I gonna do? Redo the data? Use float?
@@ -24,9 +29,12 @@ def run(inputPath):
 	while len(s) > 1:
 		timestamp, speaker = s.split()
 		deci = timestampToDeciseconds(timestamp)
-		assert lastTime < deci
-		assert lastSpeaker != speaker
+		if lastTime >= deci:
+			print "ERR: time backtracking:", lastTime, deci, timestamp
+		if lastSpeaker == speaker:
+			print "ERR: no speaker change", speaker
 		outBuff.append([deci, speaker])
+		lastTime = deci
 		s = f.readline()
 	f.close()
 	return outBuff
@@ -34,21 +42,31 @@ def run(inputPath):
 def saveOutput(outputPath, outBuff):
 	writeBuff = ""
 	for i in outBuff:
-		deci, speaker = outBuff
+		deci, speaker = i
 		writeBuff += str(deci) + '\t' + speaker + '\n'
 	fo = open(outputPath, 'w')
 	fo.write(writeBuff)
 	fo.close()
 
+# VERY BROKEN
 def generatePixelGraph(numList, colorList, filePath):
 	def numToColor(num):
+		if num == 'M':
+			num = 0
+		elif num == 'C':
+			num = 1
+		else:
+			print "ERR: invalid input:", num
+			assert False
 		return colorList[num]
 
-	numList = np.resize(1, len(numList))
-	pxs = np.array([map(numToColor, i) for i in numList], dtype='int8')
+	pxs = []
+	for i in numList:
+		for j in range(i[0]):
+			pxs.append(numToColor(i[1]))
+	pxs = np.array([pxs])
 	img = imaging.fromarray(pxs, 'RGB')
 	img = img.resize((len(pxs) * pixelGraphZoom, pixelGraphZoom))
-	assert not os.path.isfile(filePath)
 	img.save(filePath)
 
 # check last tag != this tag
