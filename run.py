@@ -19,8 +19,9 @@ testLabels = ['joo']
 manualTestFile = "joo proc pass 3.wav.mfc"
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 3
+numSets = 1
 numThreads = 4
+printTestingTimes = False
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -241,12 +242,20 @@ def modelProcess(modelFunc, tag, ms):
 			model.dummyattributethatdoesntexist
 			# MiniK score is not accuracy
 			# raise an attribute error to skip in to the hand-written accuracy code
+		if printTestingTimes:
+			print 'TESTING BEGIN', datetime.now()
 		predicted_labels = model.predict(testFeatureVector)
+		if printTestingTimes:
+			print 'TESTING END', datetime.now()
 		accuracy = model.score(testFeatureVector, testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
 	except AttributeError:
 		# some models only have online modes
+		if printTestingTimes:
+			print 'TESTING BEGIN', datetime.now()
 		predicted_labels = model.fit_predict(testFeatureVector)
+		if printTestingTimes:
+			print 'TESTING END', datetime.now()
 		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
 		recall = recallCalc(predicted_labels, testTruthVector)
 		f1 = float(2) * accuracy * recall / (accuracy + recall)
