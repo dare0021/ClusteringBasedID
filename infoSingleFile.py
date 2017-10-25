@@ -18,6 +18,8 @@ def getLastTimestamp(f):
 
 # retrofit sinfo class
 def init(compFilePath, dataLen):
+	global lookup
+
 	compFile = open(compFilePath, 'r')
 	# GET LASTTIMESTAMP FROM END OF FILE
 	multiplier = float(dataLen) / getLastTimestamp(compFile)
@@ -43,7 +45,10 @@ def init(compFilePath, dataLen):
 		diff = dataLen - len(lookup)
 		for i in range(diff):
 			lookup.append(lookup[-1])
-	assert len(lookup) >= dataLen
+	elif dataLen < len(lookup):
+		diff = len(lookup) - dataLen
+		lookup = lookup[:len(lookup)-diff]
+	assert len(lookup) == dataLen
 
 # returns whether the file path is for a male or female speaker
 # 0: Adult
