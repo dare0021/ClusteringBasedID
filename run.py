@@ -24,9 +24,9 @@ numThreads = 4
 printTestingTimes = False
 
 # in number of the feature vectors used. MFCC is 30ms
-# svmWindowSize = 10000 // 30
+svmWindowSize = 10000 // 30
 # also in number of feature vectors
-# svmStride = 1
+svmStride = 1
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -150,27 +150,23 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 	x = []
 	y = []
 
-	if shuffle:
-		for speaker in speakerList:
-			if speaker in featureVectors:
-				np.random.shuffle(featureVectors[speaker])
-			else:
-				print "ERR: unknown speaker", str(speaker)
-				print featureVectors.keys()
-				print groundTruths.keys()
-				assert False
-
 	for speaker in speakerList:
 		if speaker in featureVectors:
-			data = featureVectors[speaker]
+			xi = featureVectors[speaker]
+			yi = groundTruths[speaker]
+			if shuffle:
+				rng_state = np.random.get_state()
+				np.random.shuffle(xi)
+				np.random.set_state(rng_state)
+				np.random.shuffle(yi)
 		else:
 			print "ERR: unknown speaker", str(speaker)
 			print featureVectors.keys()
 			print groundTruths.keys()
 			assert False
-		for i in range(len(data)):
-			x.append(data[i])
-			y.append(groundTruths[speaker][i])
+		for i in range(len(xi)):
+			x.append(xi[i])
+			y.append(yi[i])
 
 	x = reduceArrDimension(x)
 	y = reduceArrDimension(y)
