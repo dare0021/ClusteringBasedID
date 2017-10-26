@@ -140,6 +140,20 @@ def loadWAVwithPAA(inputPath, paaFunction):
 			data = [[datum] for datum in data]
 		storeFeature(sid, data, filePath)
 
+def windowing(x, y):
+	newX = []
+	newY = []
+	iterRange = len(x) - svmWindowSize + 1
+	if iterRange % svmStride > 0:
+		print "ERR: SVM window stride misaligned by:", iterRange % svmStride
+		assert False
+	i = 0
+	while i < iterRange:
+		newX.extend(x[i : i + svmWindowSize])
+		newY.extend(y[i : i + svmWindowSize])
+		i += svmStride
+	return newX, newY
+
 # returns: feature vector array (2D), ground truth array (1D)
 def collateData(speakerList, divider = None, subtractor = None, shuffle = False):
 	def reduceArrDimension(a):
@@ -170,6 +184,8 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 
 	x = reduceArrDimension(x)
 	y = reduceArrDimension(y)
+
+	x, y = windowing(x, y)
 
 	sklSS = sklearn.preprocessing.StandardScaler()
 	if divider == None:
