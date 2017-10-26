@@ -24,7 +24,7 @@ numThreads = 4
 printTestingTimes = False
 
 # in number of the feature vectors used. MFCC is 30ms
-svmWindowSize = 10000 // 30
+svmWindowSize = 1000 // 30
 # also in number of feature vectors
 svmStride = 1
 
@@ -112,7 +112,7 @@ def storeFeature(sid, data, filePath):
 
 def loadMFCCFiles(inputPath):
 	filePaths = [inputPath+f for f in os.listdir(inputPath) if os.path.isfile(inputPath+f) and f.endswith('.mfc')]
-	for filePath in filePaths:		
+	for filePath in filePaths:
 		sid = sinfo.getSpeakerID(filePath)
 		data = None
 		if filePath in MfccCache.keys():
@@ -141,6 +141,12 @@ def loadWAVwithPAA(inputPath, paaFunction):
 		storeFeature(sid, data, filePath)
 
 def windowing(x, y):
+	def reduceArrDimension(a):
+		retval = []
+		for iter in a:
+			retval.extend(iter)
+		return retval
+
 	newX = []
 	newY = []
 	iterRange = len(x) - svmWindowSize + 1
@@ -149,7 +155,7 @@ def windowing(x, y):
 		assert False
 	i = 0
 	while i < iterRange:
-		newX.extend(x[i : i + svmWindowSize])
+		newX.extend(reduceArrDimension(x[i : i + svmWindowSize]))
 		newY.extend(y[i : i + svmWindowSize])
 		i += svmStride
 	return newX, newY
