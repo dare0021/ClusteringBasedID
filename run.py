@@ -185,8 +185,6 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 	x = reduceArrDimension(x)
 	y = reduceArrDimension(y)
 
-	x, y = windowing(x, y)
-
 	sklSS = sklearn.preprocessing.StandardScaler()
 	if divider == None:
 		x = sklSS.fit_transform(x)		
@@ -202,6 +200,9 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 			print "WARN: data not normalized for speakers " + str(speakerList)
 			print "divider", divider
 			print "subtractor", subtractor
+
+	x, y = windowing(x, y)
+
 	return x, y, sklSS.scale_, sklSS.mean_
 
 def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
@@ -219,7 +220,8 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 		print "divider", divider
 		print "subtractor", subtractor
 
-	return x, infoSingleFile.getTruthValues()
+	x, y = windowing(x, infoSingleFile.getTruthValues())
+	return x, y
 
 def getSubset():
 	if manualTrainTestSet:
