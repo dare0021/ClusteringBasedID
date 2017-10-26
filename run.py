@@ -28,7 +28,7 @@ printTestingTimes = False
 # at least I think it's OOM; python quits silently after filling avilable RAM (16GB)
 svmWindowSize = 1000 // 30
 # also in number of feature vectors
-svmStride = 1
+svmStride = 4
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -153,8 +153,7 @@ def windowing(x, y):
 	newY = []
 	iterRange = len(x) - svmWindowSize + 1
 	if iterRange % svmStride > 0:
-		print "ERR: SVM window stride misaligned by:", iterRange % svmStride
-		assert False
+		print "WARN: SVM window stride misaligned by:", iterRange % svmStride
 	i = 0
 	while i < iterRange:
 		newX.extend(reduceArrDimension(x[i : i + svmWindowSize]))
