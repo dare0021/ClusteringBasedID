@@ -156,8 +156,9 @@ def windowing(x, y):
 		print "WARN: SVM window stride misaligned by:", iterRange % svmStride
 	i = 0
 	while i < iterRange:
-		newX.extend(reduceArrDimension(x[i : i + svmWindowSize]))
-		newY.extend(y[i : i + svmWindowSize])
+		xi = reduceArrDimension(x[i : i + svmWindowSize])
+		newX.append(xi)
+		newY.append(round(np.mean(y[i : i + svmWindowSize])))
 		i += svmStride
 	return newX, newY
 
