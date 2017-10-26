@@ -24,6 +24,8 @@ numThreads = 4
 printTestingTimes = False
 
 # in number of the feature vectors used. MFCC is 30ms
+# large window sizes leads to OOM failure
+# at least I think it's OOM; python quits silently after filling avilable RAM (16GB)
 svmWindowSize = 1000 // 30
 # also in number of feature vectors
 svmStride = 1
