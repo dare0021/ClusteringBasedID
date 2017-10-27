@@ -22,14 +22,15 @@ manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 1
 numThreads = 4
-printTestingTimes = False
+printTestingTimes = True
 
 # in number of the feature vectors used. MFCC is 30ms
 # large window sizes leads to OOM failure
 # at least I think it's OOM; python quits silently after filling avilable RAM (16GB)
+# might be able to batch SVM training? Depends on how svm.fit() works
 svmWindowSize = 10000 // 30
 # also in number of feature vectors
-svmStride = int(svmWindowSize *0.3)
+svmStride = int(svmWindowSize *0.5)
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
