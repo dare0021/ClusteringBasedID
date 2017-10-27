@@ -15,6 +15,7 @@ inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
 manualTrainTestSet = True
 trainLabels = ['kim', 'lee', 'seo', 'yoon']
 testLabels = ['joo']
+autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = "joo proc pass 3.wav.mfc"
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
@@ -251,6 +252,14 @@ def getSubset():
 		print "Testing with speaker #" + str(testSpeaker) + ", label: " + str(speakers[testSpeaker])
 	return trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector
 
+# flips 0 to 1 and non-0 to 0 for any given 1D array
+def flipTruthValues(truthVect):
+	def flip(item):
+		if item == 0:
+			return 1
+		return 0
+	return map(flip, truthVect)
+
 def modelProcess(modelFunc, tag, ms):
 	global threadSemaphore
 	def resetModel():
@@ -278,6 +287,9 @@ def modelProcess(modelFunc, tag, ms):
 		if printTestingTimes:
 			print 'TESTING END', datetime.now()
 		accuracy = model.score(testFeatureVector, testTruthVector)
+		if autoflipOutputIfBelow50 and accuracy < 50:
+			accuracy = 1 - accuracy
+		testTruthVector = flipTruthValues(testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
 	except AttributeError:
 		# some models only have online modes
@@ -287,6 +299,9 @@ def modelProcess(modelFunc, tag, ms):
 		if printTestingTimes:
 			print 'TESTING END', datetime.now()
 		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
+		if autoflipOutputIfBelow50 and accuracy < 50:
+			accuracy = 1 - accuracy
+		testTruthVector = flipTruthValues(testTruthVector)
 		recall = recallCalc(predicted_labels, testTruthVector)
 		f1 = float(2) * accuracy * recall / (accuracy + recall)
 	if accuracy < 0 or accuracy > 1:

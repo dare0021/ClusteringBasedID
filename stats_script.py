@@ -580,4 +580,4 @@ def runMultiple(parentDir):
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 # runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/")
-runMultiple("/home/jkih/Music/sukwoo_2min_utt/")
+runMultiple("/home/jkih/Music/sukwoo_2min_utt/1s window 50pct stride/")
