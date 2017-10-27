@@ -428,7 +428,7 @@ def textToIntList(txt):
 		decrement = 2
 	txt = txt[1:len(txt)-decrement]
 	txt = txt.split(', ')
-	return [int(i) for i in txt]
+	return [int(float(i)) for i in txt]
 
 def drawPixelGraph(numList, colorList, filePath):
 	def numToColor(num):
@@ -580,4 +580,4 @@ def runMultiple(parentDir):
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 # runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/")
-runMultiple("/home/jkih/Music/sukwoo_2min_utt/joo pass 3/")
+runMultiple("/home/jkih/Music/sukwoo_2min_utt/")

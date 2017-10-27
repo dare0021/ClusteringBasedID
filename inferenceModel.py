@@ -7,7 +7,8 @@ import numpy as np
 from threading import Thread, BoundedSemaphore
 
 # inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/"
-inputPath = '/home/jkih/Music/sukwoo_2min_utt/joo pass 3/'
+suffix = '1s window 50pct stride'
+inputPath = "/home/jkih/Music/sukwoo_2min_utt/" + suffix + "/"
 outputPath = inputPath + "inferred/"
 
 # resistance to change
