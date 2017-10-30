@@ -12,12 +12,12 @@ import modelStorage as mds
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
-manualTrainTestSet = True
+manualTrainTestSet = False
 trainLabels = ['kim', 'lee', 'seo', 'yoon']
 testLabels = ['joo']
 autoflipOutputIfBelow50 = True
 # leave blank to ignore
-manualTestFile = "joo proc pass 3.wav.mfc"
+manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 3
@@ -222,8 +222,15 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 			print "subtractor", subtractor
 
 	x, y = windowing(x, y)
+	retScale = None
+	retMean = None
+	try:
+		retScale = sklSS.scale_
+		retMean = sklSS.mean_
+	except AttributeError:
+		pass
 
-	return x, y, sklSS.scale_, sklSS.mean_
+	return x, y, retScale, retMean
 
 def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 	if not (filePath in MfccCache.keys()):
