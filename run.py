@@ -24,7 +24,7 @@ numSets = 3
 numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
-normalizeTestSet = False
+normalizeTestSet = True
 
 # in number of the feature vectors used. MFCC is 30ms
 # large window sizes leads to OOM failure
@@ -209,7 +209,7 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 			print "ERR: data not normalized for speakers " + str(speakerList)
 			print "Check if bounds are too close"
 			assert False
-	elif divider == False:
+	elif divider[0] == False:
 		# Don't normalize
 		pass
 	else:
@@ -238,7 +238,7 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 		infoSingleFile.init(diarizationFilePath, len(MfccCache[filePath]))
 	x = MfccCache[filePath]
 
-	if not ((divider == None) or (divider == False)):
+	if not ((divider == None) or (divider[0] == False)):
 		sklSS = sklearn.preprocessing.StandardScaler()
 		sklSS.scale_ = divider
 		sklSS.mean_ = subtractor
@@ -255,10 +255,10 @@ def getSubset():
 	if manualTrainTestSet:
 		datA = None
 		if not normalizeTrainingSet:
-			datA = False
+			datA = [False]
 		trainFeatureVector, trainTruthVector, datA, datB = collateData(trainLabels, shuffle = True, divider = datA)
 		if not normalizeTestSet:
-			datA = False
+			datA = [False]
 		if len(manualTestFile) > 0:
 			testFeatureVector, testTruthVector = loadManualTestFile(manualTestFile, manualTestDiaFilePath, datA, datB)
 		else:
@@ -271,10 +271,10 @@ def getSubset():
 		speakers = featureVectors.keys()
 		datA = None
 		if not normalizeTrainingSet:
-			datA = False
+			datA = [False]
 		trainFeatureVector, trainTruthVector, datA, datB = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]], shuffle = True, divider = datA)
 		if not normalizeTestSet:
-			datA = False
+			datA = [False]
 		testFeatureVector, testTruthVector, datA, datB = collateData([speakers[testSpeaker]], datA, datB, True)
 
 		lastSpeaker = testSpeaker
