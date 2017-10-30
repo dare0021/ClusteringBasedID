@@ -20,7 +20,7 @@ autoflipOutputIfBelow50 = True
 manualTestFile = "joo proc pass 3.wav.mfc"
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 10
+numSets = 3
 numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
@@ -147,7 +147,7 @@ def loadWAVwithPAA(inputPath, paaFunction):
 			data = [[datum] for datum in data]
 		storeFeature(sid, data, filePath)
 
-def windowing(x, y):
+def windowing(x, y, normalizeEachWindow = False):
 	def reduceArrDimension(a):
 		retval = []
 		for iter in a:
@@ -161,7 +161,11 @@ def windowing(x, y):
 		print "WARN: SVM window stride misaligned by:", iterRange % svmStride
 	i = 0
 	while i < iterRange:
-		xi = reduceArrDimension(x[i : i + svmWindowSize])
+		xi = x[i : i + svmWindowSize]
+		if normalizeEachWindow:
+			sklSS = sklearn.preprocessing.StandardScaler()
+			xi = sklSS.fit_transform(xi)
+		xi = reduceArrDimension(xi)
 		newX.append(xi)
 		newY.append(round(np.mean(y[i : i + svmWindowSize])))
 		i += svmStride
@@ -228,9 +232,6 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 	x = MfccCache[filePath]
 
 	if not ((divider == None) or (divider == False)):
-		print 'yyyyyyyyyyyyyyyyyyy'
-		print divider
-		assert False
 		sklSS = sklearn.preprocessing.StandardScaler()
 		sklSS.scale_ = divider
 		sklSS.mean_ = subtractor
@@ -240,7 +241,7 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 		print "divider", divider
 		print "subtractor", subtractor
 
-	x, y = windowing(x, infoSingleFile.getTruthValues())
+	x, y = windowing(x, infoSingleFile.getTruthValues(), True)
 	return x, y
 
 def getSubset():
