@@ -227,10 +227,11 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 		infoSingleFile.init(diarizationFilePath, len(MfccCache[filePath]))
 	x = MfccCache[filePath]
 
-	sklSS = sklearn.preprocessing.StandardScaler()
-	sklSS.scale_ = divider
-	sklSS.mean_ = subtractor
-	x = sklSS.transform(x)
+	if divider != None:
+		sklSS = sklearn.preprocessing.StandardScaler()
+		sklSS.scale_ = divider
+		sklSS.mean_ = subtractor
+		x = sklSS.transform(x)
 	if not validateNormalization(x):
 		print "WARN: data not normalized for the manual test set"
 		print "divider", divider
