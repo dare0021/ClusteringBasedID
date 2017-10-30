@@ -20,9 +20,11 @@ autoflipOutputIfBelow50 = True
 manualTestFile = "joo proc pass 3.wav.mfc"
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 100
+numSets = 10
 numThreads = 4
 printTestingTimes = True
+normalizeTrainingSet = True
+normalizeTestSet = False
 
 # in number of the feature vectors used. MFCC is 30ms
 # large window sizes leads to OOM failure
@@ -203,6 +205,9 @@ def collateData(speakerList, divider = None, subtractor = None, shuffle = False)
 			print "ERR: data not normalized for speakers " + str(speakerList)
 			print "Check if bounds are too close"
 			assert False
+	elif divider == False:
+		# Don't normalize
+		pass
 	else:
 		sklSS.scale_ = divider
 		sklSS.mean_ = subtractor
@@ -236,7 +241,12 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 
 def getSubset():
 	if manualTrainTestSet:
-		trainFeatureVector, trainTruthVector, datA, datB = collateData(trainLabels, shuffle = True)
+		datA = None
+		if not normalizeTrainingSet:
+			datA = False
+		trainFeatureVector, trainTruthVector, datA, datB = collateData(trainLabels, shuffle = True, divider = datA)
+		if not normalizeTestSet:
+			datA = False
 		if len(manualTestFile) > 0:
 			testFeatureVector, testTruthVector = loadManualTestFile(manualTestFile, manualTestDiaFilePath, datA, datB)
 		else:
@@ -247,7 +257,12 @@ def getSubset():
 		if testSpeaker >= len(featureVectors.keys()):
 			testSpeaker = 0
 		speakers = featureVectors.keys()
-		trainFeatureVector, trainTruthVector, datA, datB = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]], shuffle = True)
+		datA = None
+		if not normalizeTrainingSet:
+			datA = False
+		trainFeatureVector, trainTruthVector, datA, datB = collateData([speaker for speaker in speakers if speaker != speakers[testSpeaker]], shuffle = True, divider = datA)
+		if not normalizeTestSet:
+			datA = False
 		testFeatureVector, testTruthVector, datA, datB = collateData([speakers[testSpeaker]], datA, datB, True)
 
 		lastSpeaker = testSpeaker
