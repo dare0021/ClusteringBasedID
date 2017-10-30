@@ -227,7 +227,10 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 		infoSingleFile.init(diarizationFilePath, len(MfccCache[filePath]))
 	x = MfccCache[filePath]
 
-	if (divider != None) or (divider != False):
+	if not ((divider == None) or (divider == False)):
+		print 'yyyyyyyyyyyyyyyyyyy'
+		print divider
+		assert False
 		sklSS = sklearn.preprocessing.StandardScaler()
 		sklSS.scale_ = divider
 		sklSS.mean_ = subtractor
