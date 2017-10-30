@@ -20,7 +20,7 @@ autoflipOutputIfBelow50 = True
 manualTestFile = "joo proc pass 3.wav.mfc"
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 1
+numSets = 100
 numThreads = 4
 printTestingTimes = True
 
@@ -28,9 +28,9 @@ printTestingTimes = True
 # large window sizes leads to OOM failure
 # at least I think it's OOM; python quits silently after filling avilable RAM (16GB)
 # might be able to batch SVM training? Depends on how svm.fit() works
-svmWindowSize = 10000 // 30
+svmWindowSize = 1000 // 30
 # also in number of feature vectors
-svmStride = int(svmWindowSize *0.5)
+svmStride = int(svmWindowSize *.5)
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -49,6 +49,7 @@ featureVectorCache = dict()
 MfccCache = dict()
 groundTruths = dict()
 lastSpeaker = -1
+gtvWasFlipped = False
 
 def clearVariables():
 	global featureVectors
@@ -290,6 +291,7 @@ def modelProcess(modelFunc, tag, ms):
 		accuracy = model.score(testFeatureVector, testTruthVector)
 		if autoflipOutputIfBelow50 and accuracy < 50:
 			accuracy = 1 - accuracy
+			gtvWasFlipped = True
 		testTruthVector = flipTruthValues(testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
 	except AttributeError:
@@ -302,6 +304,7 @@ def modelProcess(modelFunc, tag, ms):
 		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
 		if autoflipOutputIfBelow50 and accuracy < 50:
 			accuracy = 1 - accuracy
+			gtvWasFlipped = True
 		testTruthVector = flipTruthValues(testTruthVector)
 		recall = recallCalc(predicted_labels, testTruthVector)
 		f1 = float(2) * accuracy * recall / (accuracy + recall)
@@ -326,6 +329,8 @@ def modelProcess(modelFunc, tag, ms):
 	f.write(str(predicted_labels.tolist()))
 	f.write('\n')
 	f.write(str(testTruthVector))
+	f.write('\n')
+	f.write('Ground Truth Values Auto-Flipped: ' + str(gtvWasFlipped))
 	f.close()
 	threadSemaphore.release()
 	

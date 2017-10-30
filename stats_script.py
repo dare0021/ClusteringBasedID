@@ -573,11 +573,11 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-# inputPath = "/home/jkih/Music/sukwoo_2min_utt/joo pass 3/"
-# outputPath = inputPath + 'stats/'
-# results = loadSingleVariableFiles(inputPath)
-# saveToFile(results, outputPath, 2)
-# drawPixelGraphs(inputPath, outputPath)
-# variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/joo pass 3 no windowing/"
+outputPath = inputPath + 'stats/'
+results = loadSingleVariableFiles(inputPath)
+saveToFile(results, outputPath, 2)
+drawPixelGraphs(inputPath, outputPath)
+variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
 # runMultiple("/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ShortSegsMFCC SVM_RBF g search 0.001 0.1 0.002 non-clairvoyant/")
-runMultiple("/home/jkih/Music/sukwoo_2min_utt/1s window 50pct stride/")
+# runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")

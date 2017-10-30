@@ -112,7 +112,7 @@ def printMax(results, outputPath):
 
 	f.close()
 
-inputPath = "/home/jkih/Music/sukwoo_2min_utt/5s window 30pct stride/"
+inputPath = "/home/jkih/Music/sukwoo_2min_utt/1s window 0.3333 stride/"
 # inputPath = '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/f 0 0.4 0.01 d 16/'
 results = loadFiles(inputPath)
 printMax(results, inputPath + 'inf stats.txt')
