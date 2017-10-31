@@ -19,9 +19,10 @@ autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
-outputPath = inputPath + str(datetime.now().time()) + '/'
+outputPath = inputPath + '1 0.3/'
+# outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 3
-numThreads = 4
+numThreads = 2
 printTestingTimes = True
 normalizeTrainingSet = True
 normalizeTestSet = True
@@ -32,7 +33,7 @@ normalizeTestSet = True
 # might be able to batch SVM training? Depends on how svm.fit() works
 svmWindowSize = 1000 // 30
 # also in number of feature vectors
-svmStride = int(svmWindowSize *.5)
+svmStride = int(svmWindowSize *.3)
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -316,7 +317,7 @@ def modelProcess(modelFunc, tag, ms):
 		if printTestingTimes:
 			print 'TESTING END', datetime.now()
 		accuracy = model.score(testFeatureVector, testTruthVector)
-		if autoflipOutputIfBelow50 and accuracy < 50:
+		if autoflipOutputIfBelow50 and accuracy < .5:
 			accuracy = 1 - accuracy
 			gtvWasFlipped = True
 		testTruthVector = flipTruthValues(testTruthVector)
@@ -329,7 +330,7 @@ def modelProcess(modelFunc, tag, ms):
 		if printTestingTimes:
 			print 'TESTING END', datetime.now()
 		accuracy = float(pairwiseComparison(predicted_labels, testTruthVector).count(True)) / len(testTruthVector)
-		if autoflipOutputIfBelow50 and accuracy < 50:
+		if autoflipOutputIfBelow50 and accuracy < .5:
 			accuracy = 1 - accuracy
 			gtvWasFlipped = True
 		testTruthVector = flipTruthValues(testTruthVector)
