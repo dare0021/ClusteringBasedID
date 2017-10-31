@@ -22,7 +22,7 @@ manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 outputPath = inputPath + '1 0.3/'
 # outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 3
-numThreads = 2
+numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
 normalizeTestSet = True
@@ -292,6 +292,7 @@ def flipTruthValues(truthVect):
 
 def modelProcess(modelFunc, tag, ms):
 	global threadSemaphore
+	global gtvWasFlipped
 	def resetModel():
 		if ms.args != None:
 			return modelFunc(ms.args)
