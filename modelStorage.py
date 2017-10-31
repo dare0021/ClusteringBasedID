@@ -91,6 +91,13 @@ def model_ACAverage():
 	print 'Running AC Average'
 	return sklearn.cluster.AgglomerativeClustering(n_clusters=sinfo.getNbClasses(), linkage='average')
 
+def factory_RandomForest(n_estimators=10, max_features=4):
+	return (n_estimators, max_features)
+
+def model_RandomForest(args = factory_RandomForest()):
+	print 'Running Random Forest'
+	return sklearn.ensemble.RandomForestClassifier(n_estimators=args[0], max_features=args[1])
+
 # clustering class incompatible with classifiers
 # clustering is deterministic, non-ML? Doesn't seem to use training at all.
 # http://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html

@@ -20,14 +20,14 @@ autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
-outputPath = inputPath + '1 0.3/'
+outputPath = inputPath + '1 0.3 midpoint/'
 # outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 3
 numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
 normalizeTestSet = True
-windowGTVmode = WindowGTVmodes.average
+windowGTVmode = WindowGTVmodes.midpoint
 
 # in number of the feature vectors used. MFCC is 30ms
 # large window sizes leads to OOM failure
