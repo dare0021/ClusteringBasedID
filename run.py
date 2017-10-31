@@ -8,7 +8,8 @@ from datetime import datetime
 import sklearn 
 from threading import Thread, BoundedSemaphore
 import modelStorage as mds
-
+from enum import Enum
+WindowGTVmodes = Enum('average', 'midpoint')
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
@@ -26,6 +27,7 @@ numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
 normalizeTestSet = True
+windowGTVmode = WindowGTVmodes.average
 
 # in number of the feature vectors used. MFCC is 30ms
 # large window sizes leads to OOM failure
@@ -168,7 +170,13 @@ def windowing(x, y, normalizeEachWindow = False):
 			xi = sklSS.fit_transform(xi)
 		xi = reduceArrDimension(xi)
 		newX.append(xi)
-		newY.append(round(np.mean(y[i : i + svmWindowSize])))
+		if windowGTVmode == WindowGTVmodes.midpoint:
+			newY.append(y[int(i + svmWindowSize / 2)])
+		elif windowGTVmode == WindowGTVmodes.average:
+			newY.append(round(np.mean(y[i : i + svmWindowSize])))
+		else:
+			print 'ERR: invalid windowGTVmode:', windowGTVmode
+			assert False
 		i += svmStride
 	return newX, newY
 
