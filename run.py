@@ -416,6 +416,26 @@ def runRBFvariants():
 		# mds.runRBFvariantsCList(ms, np.arange(1.98, 3, 0.02), 0.03, i, iterlen)
 		# mds.runRBFvariantsCList(ms, [1], 0.03, i, iterlen)
 
+def runRandomForest():
+	if not os.path.exists(outputPath):
+		os.mkdir(outputPath)
+	clearVariables()
+	loadFeatureVector(inputPath, 'mfcc')
+	if manualTrainTestSet:
+		iterlen = numSets
+	else:
+		iterlen = numSets * len(featureVectors.keys())
+	mds.resetETAtimer(iterlen)
+	for i in range(iterlen):
+		print "PROCESSING: " + str(i) + " / " + str(iterlen)
+		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+		testSpeaker = featureVectors.keys()[lastSpeaker]
+		if lastSpeaker < 0:
+			testSpeaker = 'manual'
+		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(10, 4))
+		mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+		mds.incrementETAtimer()
+
 
 mds.init(threadSemaphore, modelProcess)
 # runPaaFunctions()

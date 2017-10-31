@@ -143,7 +143,7 @@ def runAllModelsMFCC(ms):
 
 # parallelization runs in runModel
 # ETA timer runs outside said function, sidestepping the coherence problem
-def resetETAtimer(num_jobs, iterDone, iterTotal):
+def resetETAtimer(num_jobs, iterDone=1, iterTotal=1):
 	global numJobs
 	global iJob
 	global starttime
