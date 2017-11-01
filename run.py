@@ -20,14 +20,14 @@ autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
-outputPath = inputPath + '1 0.3 midpoint/'
+outputPath = inputPath + '1 0.1 avg/'
 # outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 3
 numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
 normalizeTestSet = True
-windowGTVmode = WindowGTVmodes.midpoint
+windowGTVmode = WindowGTVmodes.average
 
 # in number of the feature vectors used. MFCC is 30ms
 # large window sizes leads to OOM failure
@@ -35,7 +35,7 @@ windowGTVmode = WindowGTVmodes.midpoint
 # might be able to batch SVM training? Depends on how svm.fit() works
 svmWindowSize = 1000 // 30
 # also in number of feature vectors
-svmStride = int(svmWindowSize *.3)
+svmStride = int(svmWindowSize *.1)
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
@@ -432,7 +432,7 @@ def runRandomForest():
 		testSpeaker = featureVectors.keys()[lastSpeaker]
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
-		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(10, 4))
+		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(10, 4, None))
 		mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 		mds.incrementETAtimer()
 
@@ -441,3 +441,4 @@ mds.init(threadSemaphore, modelProcess)
 # runPaaFunctions()
 # runSphinxFiles()
 runRBFvariants()
+# runRandomForest()
