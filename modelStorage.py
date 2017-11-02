@@ -57,13 +57,13 @@ def model_SVM_poly():
 	print 'Running SVM Poly'
 	return sklearn.svm.SVC(kernel='poly', cache_size=ram_usage)
 
-def factory_SVM_rbf(gamma=1.0/sinfo.getNbClasses(), shrinking=True, tol=1e-3, c=1):
-	return (gamma, shrinking, tol, c)
+def factory_SVM_rbf(gamma=1.0/sinfo.getNbClasses(), tol=1e-3, c=1):
+	return (gamma, tol, c)
 
 # Radial Basis Function
 def model_SVM_rbf(args = factory_SVM_rbf()):
 	print 'Running SVM RBF'
-	return sklearn.svm.SVC(kernel='rbf', gamma=args[0], shrinking=args[1], tol=args[2], C=args[3], cache_size=ram_usage)
+	return sklearn.svm.SVC(kernel='rbf', gamma=args[0], tol=args[1], C=args[2], cache_size=ram_usage)
 
 def model_SVM_sigmoid():
 	print 'Running SVM Sigmoid'
@@ -157,35 +157,26 @@ def incrementETAtimer():
 	print 'Completed', iJob, '/', numJobs, 'jobs', 'ETA', datetime.now() + (datetime.now() - starttime) * numJobs / iJob
 
 def runRBFvariantsGamma(ms, gList, iterDone, iterTotal):
-	heuristicsOnList = [True]
-	resetETAtimer(len(gList) * len(heuristicsOnList), iterDone, iterTotal)
-	for heuristicsOn in heuristicsOnList:
-		print 'heuristics', heuristicsOn
-		for gamma in gList:
-			print 'gamma', gamma
-			ms.args = factory_SVM_rbf(gamma, heuristicsOn)
-			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
-			incrementETAtimer()
+	resetETAtimer(len(gList), iterDone, iterTotal)
+	for gamma in gList:
+		print 'gamma', gamma
+		ms.args = factory_SVM_rbf(gamma)
+		runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+		incrementETAtimer()
 
 def runRBFvariantsCList(ms, cList, gamma, iterDone, iterTotal):
-	heuristicsOnList = [True]
-	resetETAtimer(len(cList) * len(heuristicsOnList), iterDone, iterTotal)
-	for heuristicsOn in heuristicsOnList:
-		print 'heuristics', heuristicsOn
-		for c in cList:
-			print 'c', c
-			ms.args = factory_SVM_rbf(gamma, heuristicsOn, c)
-			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
-			incrementETAtimer()
+	resetETAtimer(len(cList), iterDone, iterTotal)
+	for c in cList:
+		print 'c', c
+		ms.args = factory_SVM_rbf(gamma, c)
+		runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+		incrementETAtimer()
 
 def runRBFvariants2DList(ms, cList, gammaList, iterDone, iterTotal):
-	heuristicsOnList = [True]
-	resetETAtimer(len(cList) * len(heuristicsOnList) * len(gammaList), iterDone, iterTotal)
-	for heuristicsOn in heuristicsOnList:
-		print 'heuristics', heuristicsOn
-		for c in cList:
-			for gamma in gammaList:
-				print 'c', c, 'g', gamma
-				ms.args = factory_SVM_rbf(gamma, heuristicsOn, c)
-				runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
-				incrementETAtimer()
+	resetETAtimer(len(cList) * len(gammaList), iterDone, iterTotal)
+	for c in cList:
+		for gamma in gammaList:
+			print 'c', c, 'g', gamma
+			ms.args = factory_SVM_rbf(gamma, c)
+			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+			incrementETAtimer()
