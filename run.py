@@ -20,7 +20,7 @@ autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
-outputPath = inputPath + '5 0.1 avg'
+outputPath = inputPath + '1 0.1 avg'
 # outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 10
 numThreads = 4
@@ -35,7 +35,7 @@ windowGTVmode = WindowGTVmodes.average
 # large window sizes leads to OOM failure
 # at least I think it's OOM; python quits silently after filling avilable RAM (16GB)
 # might be able to batch SVM training? Depends on how svm.fit() works
-svmWindowSize = 5000 // 30
+svmWindowSize = 1000 // 30
 # also in number of feature vectors
 svmStride = int(svmWindowSize *.1)
 
@@ -430,7 +430,6 @@ def runRandomForest():
 		iterlen = numSets * len(featureVectors.keys())
 	forestCount = [5, 10, 20, 40, 80]
 	maxDepth = [None, 5, 10, 20, 40]
-	iter = 0
 	mds.resetETAtimer(iterlen * len(forestCount) * len(maxDepth))
 	for fc in forestCount:
 		for md in maxDepth:
@@ -444,7 +443,7 @@ def runRandomForest():
 				if lastSpeaker < 0:
 					testSpeaker = 'manual'
 				ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(fc, 4, md))
-				mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_fc_' + str(fc) + '_md_' + str(md) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+				mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_RandomForest_fc_' + str(fc) + '_md_' + str(md) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 				mds.incrementETAtimer()
 
 
