@@ -533,7 +533,7 @@ def asyncOp(inputPath, outputPath):
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
 	# variableSearchGraph(results, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-	variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
+	variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath, terminatorMarker = '_md')
 	threadSemaphore.release()
 
 # causes error on exit
@@ -549,10 +549,10 @@ def runMultiple(parentDir):
 		p.start()
 
 inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg/"
-outputPath = inputPath + 'stats/'
-results = loadSingleVariableFiles(inputPath)
-saveToFile(results, outputPath, 2)
-drawPixelGraphs(inputPath, outputPath)
-variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath, terminatorMarker = '_md')
-# runMultiple(inputPath)
+# outputPath = inputPath + 'stats/'
+# results = loadSingleVariableFiles(inputPath)
+# saveToFile(results, outputPath, 2)
+# drawPixelGraphs(inputPath, outputPath)
+# variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath, terminatorMarker = '_md')
+runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")

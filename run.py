@@ -20,12 +20,14 @@ autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
-outputPath = inputPath + '1 0.1 avg/'
+outputPath = inputPath + '1 0.1 nowindow/'
 # outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 3
 numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
+# if true normalizes testing set using the normalization parameters found during the training set normalization
+# unless it is a single file testing set, in which case we use a per window normalization
 normalizeTestSet = True
 windowGTVmode = WindowGTVmodes.average
 
@@ -33,9 +35,9 @@ windowGTVmode = WindowGTVmodes.average
 # large window sizes leads to OOM failure
 # at least I think it's OOM; python quits silently after filling avilable RAM (16GB)
 # might be able to batch SVM training? Depends on how svm.fit() works
-svmWindowSize = 1000 // 30
+svmWindowSize = 1 #1000 // 30
 # also in number of feature vectors
-svmStride = int(svmWindowSize *.1)
+svmStride = 1 #int(svmWindowSize *.1)
 
 # pAA settings 
 # https://github.com/tyiannak/pyAudioAnalysis/wiki/3.-Feature-Extraction
