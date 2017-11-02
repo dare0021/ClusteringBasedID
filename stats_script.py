@@ -42,21 +42,23 @@ class Result:
 		retval += kvpDisp("F1       ", self.f1)
 		return retval
 
-class CGResult:
-	def __init__(self, filename, acc, f1, c, g):
+class Result2D:
+	def __init__(self, filename, acc, f1, aName, bName, aVal, bVal):
 		self.filename = filename
 		self.accuracy = acc
 		self.f1 = f1
-		self.c = c
-		self.gamma = g
-		self.type = 'CGResult'
+		self.aVal = aVal
+		self.bVal = bVal
+		self.type = 'Result2D'
+		self.aName = aName
+		self.bName = bName
 
 	def __str__(self):
 		retval  = kvpDisp("FileNum  ", self.filename)
 		retval += kvpDisp("Accuracy ", self.accuracy)
 		retval += kvpDisp("F1       ", self.f1)
-		retval += kvpDisp("c value  ", self.c)
-		retval += kvpDisp("gamma    ", self.gamma)
+		retval += kvpDisp(aName + "\t", self.aVal)
+		retval += kvpDisp(bName + "\t", self.bVal)
 		return retval
 
 def kvpDisp(key, val):
@@ -81,7 +83,7 @@ def getFeatureNum(fileName):
 	fileName = fileName[fileName.find('_')+1:]
 	return int(fileName[:fileName.find('_')])
 
-def loadCGFiles(inputPath):
+def loadTwoVariableFiles(inputPath, aKey, bKey, aName, bName):
 	results = []
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
@@ -90,11 +92,11 @@ def loadCGFiles(inputPath):
 		s = f.readline()
 		f.close()
 
-		suffix = filePath[filePath.rfind('_g_')+3:]
+		suffix = filePath[filePath.rfind(aKey)+len(aKey):]
 		fileName = suffix[suffix.rfind('/')+1:]
-		g = float(suffix[:suffix.find('_')])
-		suffix = suffix[suffix.find('_c_')+3:]
-		c = int(suffix[:suffix.find('_')])
+		aVal = float(suffix[:suffix.find('_')])
+		suffix = suffix[suffix.find(bKey)+len(bKey):]
+		bVal = int(suffix[:suffix.find('_')])
 		accuracy = float(s[10:s.find('\t')])
 		f1 = float(s[s.find('f1: ')+4:])
 		if accuracy < 0 and accuracy > 1:
@@ -105,8 +107,8 @@ def loadCGFiles(inputPath):
 			print 'INVALID F1 @ ' + filePath
 			print f1
 			os.exit
-		fileNum = fileName[fileName.find('_g_')+1:fileName.rfind('_')]
-		result = CGResult(fileNum, accuracy, f1, c, g)
+		fileNum = fileName[fileName.find(aKey)+1:fileName.rfind('_')]
+		result = Result2D(fileNum, accuracy, f1, aName, bName, aVal, bVal)
 		if not silence:
 			print result
 		results.append(result)
@@ -405,7 +407,7 @@ def saveToFile(results, outputPath, verbose=0):
 		if verbose > 1:
 			saveByCombination(f, results, outputPath)
 			f.write('\n')
-	elif results[0].type == 'CGResult':
+	elif results[0].type == 'Result2D':
 		if verbose > 0:
 			saveCGgrid(f, results, outputPath)
 			f.write('\n')
@@ -558,7 +560,8 @@ def asyncOp(inputPath, outputPath):
 	results = loadSingleVariableFiles(inputPath)
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
-	variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
+	# variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
+	variableSearchGraph(results, heuristicsOn = True, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
 	threadSemaphore.release()
 
 # causes error on exit
@@ -573,11 +576,11 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/1 0.1 midpoint/"
-# outputPath = inputPath + 'stats/'
-# results = loadSingleVariableFiles(inputPath)
-# saveToFile(results, outputPath, 2)
-# drawPixelGraphs(inputPath, outputPath)
-# variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-runMultiple(inputPath)
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/1 0.1 avg/"
+outputPath = inputPath + 'stats/'
+results = loadSingleVariableFiles(inputPath)
+saveToFile(results, outputPath, 2)
+drawPixelGraphs(inputPath, outputPath)
+variableSearchGraph(results, heuristicsOn = True, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
+# runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")

@@ -112,7 +112,7 @@ def printMax(results, outputPath):
 
 	f.close()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/1 0.1 midpoint/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/1 0.1 avg/"
 # inputPath = '/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/f 0 0.4 0.01 d 16/'
 results = loadFiles(inputPath)
 printMax(results, inputPath + 'inf stats.txt')

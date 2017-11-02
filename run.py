@@ -426,19 +426,20 @@ def runRandomForest():
 	else:
 		iterlen = numSets * len(featureVectors.keys())
 	mds.resetETAtimer(iterlen)
+	forestCount = 10
 	for i in range(iterlen):
 		print "PROCESSING: " + str(i) + " / " + str(iterlen)
 		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 		testSpeaker = featureVectors.keys()[lastSpeaker]
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
-		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(10, 4, None))
-		mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_H_' + str(heuristicsOn) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(forestCount, 4, None))
+		mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_fc_' + str(forestCount) + '_H_' + str(True) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 		mds.incrementETAtimer()
 
 
 mds.init(threadSemaphore, modelProcess)
 # runPaaFunctions()
 # runSphinxFiles()
-runRBFvariants()
-# runRandomForest()
+# runRBFvariants()
+runRandomForest()
