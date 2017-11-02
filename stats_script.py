@@ -482,7 +482,7 @@ def getComparisonList(predList, trueList):
 				retval[i] = 2
 	return retval
 
-def variableSearchGraph(results, variableMarker, variableName, outputPath):
+def variableSearchGraph(results, variableMarker, variableName, outputPath, terminatorMarker = "_"):
 	accs = dict()
 	f1s = dict()
 	for result in results:
@@ -497,7 +497,7 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath):
 				tfval = 1
 			else:
 				tfval = 0
-			gval = float(modString[modString.rfind(variableMarker)+len(variableMarker) : modString.rfind('_')])
+			gval = float(modString[modString.rfind(variableMarker)+len(variableMarker) : modString.rfind(terminatorMarker)])
 		if not (gval in accs.keys()):
 			accs[gval] = [[],[]]
 			f1s[gval] = [[],[]]
@@ -559,6 +559,6 @@ outputPath = inputPath + 'stats/'
 results = loadSingleVariableFiles(inputPath)
 saveToFile(results, outputPath, 2)
 drawPixelGraphs(inputPath, outputPath)
-variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
+variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath, terminatorMarker = '_md')
 # runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
