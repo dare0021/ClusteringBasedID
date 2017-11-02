@@ -329,12 +329,7 @@ def modelProcess(modelFunc, tag, ms):
 		if autoflipOutputIfBelow50 and accuracy < .5:
 			accuracy = 1 - accuracy
 			gtvWasFlipped = True
-			print ' '
-			print ' '
-			print 'FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP '
-			print ' '
-			print ' '
-		testTruthVector = flipTruthValues(testTruthVector)
+			testTruthVector = flipTruthValues(testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
 	except AttributeError:
 		# some models only have online modes
@@ -347,7 +342,7 @@ def modelProcess(modelFunc, tag, ms):
 		if autoflipOutputIfBelow50 and accuracy < .5:
 			accuracy = 1 - accuracy
 			gtvWasFlipped = True
-		testTruthVector = flipTruthValues(testTruthVector)
+			testTruthVector = flipTruthValues(testTruthVector)
 		recall = recallCalc(predicted_labels, testTruthVector)
 		f1 = float(2) * accuracy * recall / (accuracy + recall)
 	if accuracy < 0 or accuracy > 1:
