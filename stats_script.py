@@ -548,7 +548,7 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 nowindow/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/10 0.1 avg 10forests/"
 # outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFiles(inputPath)
 # saveToFile(results, outputPath, 2)

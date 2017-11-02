@@ -20,7 +20,7 @@ autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
-outputPath = inputPath + '1 0.1 avg/'
+outputPath = inputPath + '5 0.1 avg'
 # outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 10
 numThreads = 4
@@ -35,7 +35,7 @@ windowGTVmode = WindowGTVmodes.average
 # large window sizes leads to OOM failure
 # at least I think it's OOM; python quits silently after filling avilable RAM (16GB)
 # might be able to batch SVM training? Depends on how svm.fit() works
-svmWindowSize = 1000 // 30
+svmWindowSize = 5000 // 30
 # also in number of feature vectors
 svmStride = int(svmWindowSize *.1)
 
@@ -419,26 +419,33 @@ def runRBFvariants():
 		# mds.runRBFvariantsCList(ms, [1], 0.03, i, iterlen)
 
 def runRandomForest():
-	if not os.path.exists(outputPath):
-		os.mkdir(outputPath)
+	global outputPath
+	outputPathPrefix = outputPath
+
 	clearVariables()
 	loadFeatureVector(inputPath, 'mfcc')
 	if manualTrainTestSet:
 		iterlen = numSets
 	else:
 		iterlen = numSets * len(featureVectors.keys())
-	mds.resetETAtimer(iterlen)
-	forestCount = 10
-	maxDepth = None
-	for i in range(iterlen):
-		print "PROCESSING: " + str(i) + " / " + str(iterlen)
-		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
-		testSpeaker = featureVectors.keys()[lastSpeaker]
-		if lastSpeaker < 0:
-			testSpeaker = 'manual'
-		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(forestCount, 4, maxDepth))
-		mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_fc_' + str(forestCount) + '_md_' + str(maxDepth) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
-		mds.incrementETAtimer()
+	forestCount = [5, 10, 20, 40, 80]
+	maxDepth = [None, 5, 10, 20, 40]
+	iter = 0
+	mds.resetETAtimer(iterlen * len(forestCount) * len(maxDepth))
+	for fc in forestCount:
+		for md in maxDepth:
+			for i in range(iterlen):
+				outputPath = outputPathPrefix + ' ' + str(fc) + 'forests ' + str(md) + 'depth/'
+				if not os.path.exists(outputPath):
+					os.mkdir(outputPath)
+				print "PROCESSING: " + str(i) + " / " + str(iterlen)
+				trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+				testSpeaker = featureVectors.keys()[lastSpeaker]
+				if lastSpeaker < 0:
+					testSpeaker = 'manual'
+				ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, mds.factory_RandomForest(fc, 4, md))
+				mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_fc_' + str(fc) + '_md_' + str(md) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+				mds.incrementETAtimer()
 
 
 mds.init(threadSemaphore, modelProcess)
