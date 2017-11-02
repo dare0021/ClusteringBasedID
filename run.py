@@ -329,6 +329,11 @@ def modelProcess(modelFunc, tag, ms):
 		if autoflipOutputIfBelow50 and accuracy < .5:
 			accuracy = 1 - accuracy
 			gtvWasFlipped = True
+			print ' '
+			print ' '
+			print 'FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP FLIP '
+			print ' '
+			print ' '
 		testTruthVector = flipTruthValues(testTruthVector)
 		f1 = sklearn.metrics.f1_score(testTruthVector, predicted_labels)
 	except AttributeError:

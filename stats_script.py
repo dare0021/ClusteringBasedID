@@ -493,8 +493,8 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, termi
 		else:
 			gval = float(modString[modString.rfind(variableMarker)+len(variableMarker) : modString.rfind(terminatorMarker)])
 		if not (gval in accs.keys()):
-			accs[gval] = [[],[]]
-			f1s[gval] = [[],[]]
+			accs[gval] = []
+			f1s[gval] = []
 		accs[gval].append(result.accuracy)
 		f1s[gval].append(result.f1)
 	keys = accs.keys()
