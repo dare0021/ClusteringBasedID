@@ -14,7 +14,7 @@ tfColors = [(225,90,90),(20,230,40),(255,255,255)]
 # TP FP FN TN Padding
 compColors = [(20,230,40),(225,90,90),(240,240,60),(90,175,240),(255,255,255)]
 
-# np.seterr(invalid='raise')
+np.seterr(invalid='raise')
 for i in range(9, 22):
 	PAAFeatureVectors.append('MFCC ' + str(i))
 for i in range(22, 34):
@@ -487,22 +487,16 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, termi
 	f1s = dict()
 	for result in results:
 		modString = result.algorithm
-		tfval = None
 		gval = -1.0
 		if 'Base' in modString:
 			continue
 		else:
-			tfval = modString[modString.rfind('_')+1:] == 'True'
-			if tfval:
-				tfval = 1
-			else:
-				tfval = 0
 			gval = float(modString[modString.rfind(variableMarker)+len(variableMarker) : modString.rfind(terminatorMarker)])
 		if not (gval in accs.keys()):
 			accs[gval] = [[],[]]
 			f1s[gval] = [[],[]]
-		accs[gval][tfval].append(result.accuracy)
-		f1s[gval][tfval].append(result.f1)
+		accs[gval].append(result.accuracy)
+		f1s[gval].append(result.f1)
 	keys = accs.keys()
 	keys.sort()
 
@@ -511,10 +505,10 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, termi
 	v3 = []
 	v4 = []
 	for key in keys:
-		v1.append(np.mean(accs[key][True]))
-		v2.append(np.mean(f1s[key][True]))
-		v3.append(np.median(accs[key][True]))
-		v4.append(np.median(f1s[key][True]))
+		v1.append(np.mean(accs[key]))
+		v2.append(np.mean(f1s[key]))
+		v3.append(np.median(accs[key]))
+		v4.append(np.median(f1s[key]))
 	plt.figure()
 	plt.plot(keys, v1, label='Amean', color='#FF3030')
 	plt.plot(keys, v2, label='Fmean', color='#FF7070')
