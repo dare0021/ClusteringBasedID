@@ -489,7 +489,7 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath):
 		modString = result.algorithm
 		tfval = None
 		gval = -1.0
-		if modString == 'SVM_RBF_Base':
+		if 'Base' in modString:
 			continue
 		else:
 			tfval = modString[modString.rfind('_')+1:] == 'True'
@@ -497,7 +497,7 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath):
 				tfval = 1
 			else:
 				tfval = 0
-			gval = float(modString[modString.rfind(variableMarker)+len(variableMarker) : modString.rfind('_H_')])
+			gval = float(modString[modString.rfind(variableMarker)+len(variableMarker) : modString.rfind('_')])
 		if not (gval in accs.keys()):
 			accs[gval] = [[],[]]
 			f1s[gval] = [[],[]]
@@ -554,7 +554,7 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/1 0.1 avg/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg/"
 outputPath = inputPath + 'stats/'
 results = loadSingleVariableFiles(inputPath)
 saveToFile(results, outputPath, 2)
