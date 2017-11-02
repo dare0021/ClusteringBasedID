@@ -480,7 +480,7 @@ def getComparisonList(predList, trueList):
 				retval[i] = 2
 	return retval
 
-def variableSearchGraph(results, variableMarker, variableName, outputPath, heuristicsOn = "Both"):
+def variableSearchGraph(results, variableMarker, variableName, outputPath):
 	accs = dict()
 	f1s = dict()
 	for result in results:
@@ -503,54 +503,30 @@ def variableSearchGraph(results, variableMarker, variableName, outputPath, heuri
 		f1s[gval][tfval].append(result.f1)
 	keys = accs.keys()
 	keys.sort()
-	if heuristicsOn == 'Both' or heuristicsOn == True:
-		v1 = []
-		v2 = []
-		v3 = []
-		v4 = []
-		for key in keys:
-			v1.append(np.mean(accs[key][True]))
-			v2.append(np.mean(f1s[key][True]))
-			v3.append(np.median(accs[key][True]))
-			v4.append(np.median(f1s[key][True]))
-		plt.figure()
-		plt.plot(keys, v1, label='Amean', color='#FF3030')
-		plt.plot(keys, v2, label='Fmean', color='#FF7070')
-		plt.plot(keys, v3, label='Amed', color='#3030FF')
-		plt.plot(keys, v4, label='Fmed', color='#7070FF')
-		plt.xticks(keys)
-		plt.xlabel(variableName)
-		# plt.ylim([0,1])
-		plt.legend(loc=0)
-		if not os.path.isdir(outputPath):
-			os.mkdir(outputPath)
-		assert not os.path.isfile(outputPath + variableName + '_h1.png')
-		plt.savefig(outputPath + variableName + '_h1.png', bbox_inches='tight')
-		plt.close()
-	if heuristicsOn == 'Both' or heuristicsOn == False:
-		v1 = []
-		v2 = []
-		v3 = []
-		v4 = []
-		for key in keys:
-			v1.append(np.mean(accs[key][False]))
-			v2.append(np.mean(f1s[key][False]))
-			v3.append(np.median(accs[key][False]))
-			v4.append(np.median(f1s[key][False]))
-		plt.figure()
-		plt.plot(keys, v1, label='Amean', color='#FF3030')
-		plt.plot(keys, v2, label='Fmean', color='#FF7070')
-		plt.plot(keys, v3, label='Amed', color='#3030FF')
-		plt.plot(keys, v4, label='Fmed', color='#7070FF')
-		plt.xticks(keys)
-		plt.xlabel(variableName)
-		# plt.ylim([0,1])
-		plt.legend(loc=0)
-		if not os.path.isdir(outputPath):
-			os.mkdir(outputPath)
-		assert not os.path.isfile(outputPath + variableName + '_h0.png')
-		plt.savefig(outputPath + variableName + '_h0.png', bbox_inches='tight')
-		plt.close()
+
+	v1 = []
+	v2 = []
+	v3 = []
+	v4 = []
+	for key in keys:
+		v1.append(np.mean(accs[key][True]))
+		v2.append(np.mean(f1s[key][True]))
+		v3.append(np.median(accs[key][True]))
+		v4.append(np.median(f1s[key][True]))
+	plt.figure()
+	plt.plot(keys, v1, label='Amean', color='#FF3030')
+	plt.plot(keys, v2, label='Fmean', color='#FF7070')
+	plt.plot(keys, v3, label='Amed', color='#3030FF')
+	plt.plot(keys, v4, label='Fmed', color='#7070FF')
+	plt.xticks(keys)
+	plt.xlabel(variableName)
+	# plt.ylim([0,1])
+	plt.legend(loc=0)
+	if not os.path.isdir(outputPath):
+		os.mkdir(outputPath)
+	assert not os.path.isfile(outputPath + variableName + '.png')
+	plt.savefig(outputPath + variableName + '.png', bbox_inches='tight')
+	plt.close()
 
 def asyncOp(inputPath, outputPath):
 	if os.path.isdir(outputPath):
@@ -560,8 +536,8 @@ def asyncOp(inputPath, outputPath):
 	results = loadSingleVariableFiles(inputPath)
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
-	# variableSearchGraph(results, heuristicsOn = True, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-	variableSearchGraph(results, heuristicsOn = True, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
+	# variableSearchGraph(results, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
+	variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
 	threadSemaphore.release()
 
 # causes error on exit
@@ -581,6 +557,6 @@ outputPath = inputPath + 'stats/'
 results = loadSingleVariableFiles(inputPath)
 saveToFile(results, outputPath, 2)
 drawPixelGraphs(inputPath, outputPath)
-variableSearchGraph(results, heuristicsOn = True, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
+variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath)
 # runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
