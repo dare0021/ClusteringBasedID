@@ -308,75 +308,77 @@ def saveGrid(f, grid, cList, gList):
 		saveAndPrint(f, str(cList[gLoc]) + '\t' + tabSepLst(gSub) + '\n')
 		gLoc += 1
 
-def saveCGgrid(f, results, outputPath):
+def save2Dgrid(f, results, outputPath):
 	accs = dict()
 	f1s = dict()
 
 	gList = []
+	aName = results[0].aName
+	bName = results[0].bName
 	for result in results:
-		c = result.c
-		g = result.gamma
-		if not (c in accs.keys()):
-			accs[c] = dict()
-			f1s[c] = dict()
-		smartAppend(accs[c], g, result.accuracy)
-		smartAppend(f1s[c], g, result.f1)
-		if not (g in gList):
-			gList.append(g)
+		aVal = result.aVal
+		bVal = result.bVal
+		if not (aVal in accs.keys()):
+			accs[aVal] = dict()
+			f1s[aVal] = dict()
+		smartAppend(accs[aVal], bVal, result.accuracy)
+		smartAppend(f1s[aVal], bVal, result.f1)
+		if not (bVal in gList):
+			gList.append(bVal)
 
 	ameanGrid = np.zeros((len(accs), len(gList)))
 	amedGrid = np.zeros((len(accs), len(gList)))
 	fmeanGrid = np.zeros((len(accs), len(gList)))
 	fmedGrid = np.zeros((len(accs), len(gList)))
 
-	cList = accs.keys()
-	cList.sort()
-	gList.sort()
+	aList = accs.keys()
+	aList.sort()
+	bList.sort()
 
 	accmax_bymean = [-1,'Null']
 	accmax_bymed = [-1,'Null']
 	f1max_bymean = [-1,'Null']
 	f1max_bymed = [-1,'Null']
-	for c in accs.keys():
-		for g in accs[c].keys():
-			saveAndPrint(f, kvpDisp('c', c))
-			saveAndPrint(f, kvpDisp('g', g))
-			saveStats(f, accs[c][g], f1s[c][g], outputPath, 'Comb_'+str(c) + ' + ' +str(g))
+	for aVal in accs.keys():
+		for bVal in accs[aVal].keys():
+			saveAndPrint(f, kvpDisp(aName, aVal))
+			saveAndPrint(f, kvpDisp(bName, bVal))
+			saveStats(f, accs[aVal][bVal], f1s[aVal][bVal], outputPath, 'Comb_'+str(aVal) + ' + ' +str(bVal))
 			f.write('\n')
-			amean = np.mean(accs[c][g])
-			amed = np.median(accs[c][g])
-			fmean = np.mean(f1s[c][g])
-			fmed = np.median(f1s[c][g])
-			cLoc = listFind(cList, c)
-			gLoc = listFind(gList, g)
-			ameanGrid[cLoc][gLoc] = amean
-			amedGrid[cLoc][gLoc] = amed
-			fmeanGrid[cLoc][gLoc] = fmean
-			fmedGrid[cLoc][gLoc] = fmed
-			accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (amean, str(c) + ' + ' + str(g)))
-			accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (amed, str(c) + ' + ' + str(g)))
-			f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (fmean, str(c) + ' + ' + str(g)))
-			f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (fmed, str(c) + ' + ' + str(g)))
+			amean = np.mean(accs[aVal][bVal])
+			amed = np.median(accs[aVal][bVal])
+			fmean = np.mean(f1s[aVal][bVal])
+			fmed = np.median(f1s[aVal][bVal])
+			aLoc = listFind(aList, aVal)
+			bLoc = listFind(bList, bVal)
+			ameanGrid[aLoc][bLoc] = amean
+			amedGrid[aLoc][bLoc] = amed
+			fmeanGrid[aLoc][bLoc] = fmean
+			fmedGrid[aLoc][bLoc] = fmed
+			accmax_bymean = getListWithMaxFirstElement(accmax_bymean, (amean, str(aVal) + ' + ' + str(bVal)))
+			accmax_bymed = getListWithMaxFirstElement(accmax_bymed, (amed, str(aVal) + ' + ' + str(bVal)))
+			f1max_bymean = getListWithMaxFirstElement(f1max_bymean, (fmean, str(aVal) + ' + ' + str(bVal)))
+			f1max_bymed = getListWithMaxFirstElement(f1max_bymed, (fmed, str(aVal) + ' + ' + str(bVal)))
 	saveAndPrint(f, kvpDisp('AccMax by Mean  ', accmax_bymean))
 	saveAndPrint(f, kvpDisp('AccMax by Median', accmax_bymed))
 	saveAndPrint(f, kvpDisp('F1 Max by Mean  ', f1max_bymean))
 	saveAndPrint(f, kvpDisp('F1 Max by Median', f1max_bymed))
 
 	csv = open(f.name + '.csv', 'w')
-	saveAndPrint(csv, 'X: gamma values\n')
-	saveAndPrint(csv, 'Y: c values\n')
+	saveAndPrint(csv, 'Y: ' + aName + ' values\n')
+	saveAndPrint(csv, 'X: ' + bName + ' values\n')
 	saveAndPrint(csv, '\n')
 	saveAndPrint(csv, 'amean\n')
-	saveGrid(csv, ameanGrid, cList, gList)
+	saveGrid(csv, ameanGrid, aList, bList)
 	saveAndPrint(csv, '\n')
 	saveAndPrint(csv, 'amed\n')
-	saveGrid(csv, amedGrid, cList, gList)
+	saveGrid(csv, amedGrid, aList, bList)
 	saveAndPrint(csv, '\n')
 	saveAndPrint(csv, 'fmean\n')
-	saveGrid(csv, fmeanGrid, cList, gList)
+	saveGrid(csv, fmeanGrid, aList, bList)
 	saveAndPrint(csv, '\n')
 	saveAndPrint(csv, 'fmed\n')
-	saveGrid(csv, fmedGrid, cList, gList)
+	saveGrid(csv, fmedGrid, aList, bList)
 	csv.close()
 
 def saveToFile(results, outputPath, verbose=0):
@@ -409,7 +411,7 @@ def saveToFile(results, outputPath, verbose=0):
 			f.write('\n')
 	elif results[0].type == 'Result2D':
 		if verbose > 0:
-			saveCGgrid(f, results, outputPath)
+			save2Dgrid(f, results, outputPath)
 			f.write('\n')
 	else:
 		print "stats_script.saveToFile() failed with input:", results[0]
