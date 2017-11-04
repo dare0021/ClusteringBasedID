@@ -530,6 +530,7 @@ def asyncOp(inputPath, outputPath):
 		threadSemaphore.release()
 		return
 	results = loadSingleVariableFiles(inputPath)
+	# results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
 	# variableSearchGraph(results, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
@@ -549,11 +550,11 @@ def runMultiple(parentDir):
 		p.start()
 
 inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 256 md 5 10 20 40/"
-outputPath = inputPath + 'stats/'
+# outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFiles(inputPath)
-results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
-saveToFile(results, outputPath, 2)
-drawPixelGraphs(inputPath, outputPath)
+# results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
+# saveToFile(results, outputPath, 2)
+# drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
-# runMultiple(inputPath)
+runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
