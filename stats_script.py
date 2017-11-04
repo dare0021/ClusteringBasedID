@@ -301,18 +301,18 @@ def saveStats(f, accuracies, f1s, outputPath, plotFileNameStub=''):
 		plt.savefig(outputPath + plotFileNameStub + '.png', bbox_inches='tight')
 		plt.close()
 
-def saveGrid(f, grid, cList, gList):
-	saveAndPrint(f, ' \t' + tabSepLst(gList) + '\n')
+def saveGrid(f, grid, aList, bList):
+	saveAndPrint(f, ' \t' + tabSepLst(bList) + '\n')
 	gLoc = 0
 	for gSub in grid:
-		saveAndPrint(f, str(cList[gLoc]) + '\t' + tabSepLst(gSub) + '\n')
+		saveAndPrint(f, str(aList[gLoc]) + '\t' + tabSepLst(gSub) + '\n')
 		gLoc += 1
 
 def save2Dgrid(f, results, outputPath):
 	accs = dict()
 	f1s = dict()
 
-	gList = []
+	bList = []
 	aName = results[0].aName
 	bName = results[0].bName
 	for result in results:
@@ -323,13 +323,13 @@ def save2Dgrid(f, results, outputPath):
 			f1s[aVal] = dict()
 		smartAppend(accs[aVal], bVal, result.accuracy)
 		smartAppend(f1s[aVal], bVal, result.f1)
-		if not (bVal in gList):
-			gList.append(bVal)
+		if not (bVal in bList):
+			bList.append(bVal)
 
-	ameanGrid = np.zeros((len(accs), len(gList)))
-	amedGrid = np.zeros((len(accs), len(gList)))
-	fmeanGrid = np.zeros((len(accs), len(gList)))
-	fmedGrid = np.zeros((len(accs), len(gList)))
+	ameanGrid = np.zeros((len(accs), len(bList)))
+	amedGrid = np.zeros((len(accs), len(bList)))
+	fmeanGrid = np.zeros((len(accs), len(bList)))
+	fmedGrid = np.zeros((len(accs), len(bList)))
 
 	aList = accs.keys()
 	aList.sort()
@@ -533,7 +533,7 @@ def asyncOp(inputPath, outputPath):
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
 	# variableSearchGraph(results, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-	variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath, terminatorMarker = '_md')
+	variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
 	threadSemaphore.release()
 
 # causes error on exit
@@ -548,11 +548,12 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/10 0.1 avg 10forests/"
-# outputPath = inputPath + 'stats/'
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 256 md 5 10 20 40/"
+outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFiles(inputPath)
-# saveToFile(results, outputPath, 2)
-# drawPixelGraphs(inputPath, outputPath)
-# variableSearchGraph(results, variableMarker = '_fc_', variableName = 'forestCount', outputPath = outputPath, terminatorMarker = '_md')
-runMultiple(inputPath)
+results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
+saveToFile(results, outputPath, 2)
+drawPixelGraphs(inputPath, outputPath)
+# variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
+# runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")

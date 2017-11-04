@@ -20,8 +20,8 @@ autoflipOutputIfBelow50 = True
 # leave blank to ignore
 manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
-outputPath = inputPath + '1 0.1 avg'
-# outputPath = inputPath + str(datetime.now().time()) + '/'
+# outputPath = inputPath + '1 0.1 avg'
+outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 10
 numThreads = 4
 printTestingTimes = True
@@ -428,16 +428,16 @@ def runRandomForest():
 		iterlen = numSets
 	else:
 		iterlen = numSets * len(featureVectors.keys())
-	forestCount = [5, 10, 20, 40, 80]
-	maxDepth = [None, 5, 10, 20, 40]
+	forestCount = [256]
+	maxDepth = [5, 10, 20, 40]
 	mds.resetETAtimer(iterlen * len(forestCount) * len(maxDepth))
 	for fc in forestCount:
 		for md in maxDepth:
 			for i in range(iterlen):
-				outputPath = outputPathPrefix + ' ' + str(fc) + 'forests ' + str(md) + 'depth/'
+				# outputPath = outputPathPrefix + ' ' + str(fc) + 'forests ' + str(md) + 'depth/'
 				if not os.path.exists(outputPath):
 					os.mkdir(outputPath)
-				print "PROCESSING: " + str(i) + " / " + str(iterlen)
+				print "PROCESSING: " + str(i) + " / " + str(iterlen) + ' ' +  str(fc) + ' forests ' + str(md) + ' depth'
 				trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
 				testSpeaker = featureVectors.keys()[lastSpeaker]
 				if lastSpeaker < 0:
