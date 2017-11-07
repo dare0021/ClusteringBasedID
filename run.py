@@ -428,8 +428,8 @@ def runRandomForest():
 		iterlen = numSets
 	else:
 		iterlen = numSets * len(featureVectors.keys())
-	forestCount = [256]
-	maxDepth = [5, 10, 20, 40]
+	forestCount = [80, 128, 160]
+	maxDepth = [20, 40, None]
 	mds.resetETAtimer(iterlen * len(forestCount) * len(maxDepth))
 	for fc in forestCount:
 		for md in maxDepth:

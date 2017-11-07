@@ -96,7 +96,9 @@ def loadTwoVariableFiles(inputPath, aKey, bKey, aName, bName):
 		fileName = suffix[suffix.rfind('/')+1:]
 		aVal = float(suffix[:suffix.find('_')])
 		suffix = suffix[suffix.find(bKey)+len(bKey):]
-		bVal = int(suffix[:suffix.find('_')])
+		bVal = suffix[:suffix.find('_')]
+		if not ('none' in bVal.lower()):
+			bVal = int(bVal)
 		accuracy = float(s[10:s.find('\t')])
 		f1 = float(s[s.find('f1: ')+4:])
 		if accuracy < 0 and accuracy > 1:
@@ -529,12 +531,12 @@ def asyncOp(inputPath, outputPath):
 		print "WARN: output path" + outputPath + "already exists; skipping"
 		threadSemaphore.release()
 		return
-	results = loadSingleVariableFiles(inputPath)
-	# results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
+	# results = loadSingleVariableFiles(inputPath)
+	results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
 	saveToFile(results, outputPath, 2)
 	drawPixelGraphs(inputPath, outputPath)
 	# variableSearchGraph(results, variableMarker = '_g_', variableName = 'g', outputPath = outputPath)
-	variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
+	# variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
 	threadSemaphore.release()
 
 # causes error on exit
@@ -549,12 +551,12 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 256 md 5 10 20 40/"
-# outputPath = inputPath + 'stats/'
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 80 128 160 md 20 40 None/"
+outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFiles(inputPath)
-# results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
-# saveToFile(results, outputPath, 2)
-# drawPixelGraphs(inputPath, outputPath)
+results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
+saveToFile(results, outputPath, 2)
+drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
-runMultiple(inputPath)
+# runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
