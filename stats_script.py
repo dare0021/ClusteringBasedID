@@ -551,7 +551,7 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 80 128 160 md 20 40 None/"
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 160 256 320 512 640 md 5 10 20 mantest/inferred f0.0 d0.5/"
 outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFiles(inputPath)
 results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')

@@ -13,16 +13,16 @@ WindowGTVmodes = Enum('average', 'midpoint')
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
-manualTrainTestSet = False
+manualTrainTestSet = True
 trainLabels = ['kim', 'lee', 'seo', 'yoon']
 testLabels = ['joo']
 autoflipOutputIfBelow50 = True
 # leave blank to ignore
-manualTestFile = ""
+manualTestFile = "joo proc pass 3.wav.mfc"
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 # outputPath = inputPath + '1 0.1 avg'
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 10
+numSets = 3
 numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
@@ -254,12 +254,15 @@ def loadManualTestFile(filePath, diarizationFilePath, divider, subtractor):
 		sklSS.scale_ = divider
 		sklSS.mean_ = subtractor
 		x = sklSS.transform(x)
+
+	x, y = windowing(x, infoSingleFile.getTruthValues(), True)
+
+	x = np.array(x)
 	if not validateNormalization(x):
 		print "WARN: data not normalized for the manual test set"
 		print "divider", divider
 		print "subtractor", subtractor
 
-	x, y = windowing(x, infoSingleFile.getTruthValues(), True)
 	return x, y
 
 def getSubset():
@@ -428,8 +431,8 @@ def runRandomForest():
 		iterlen = numSets
 	else:
 		iterlen = numSets * len(featureVectors.keys())
-	forestCount = [80, 128, 160]
-	maxDepth = [20, 40, None]
+	forestCount = [160, 256, 320, 512, 640]
+	maxDepth = [5, 10, 20]
 	mds.resetETAtimer(iterlen * len(forestCount) * len(maxDepth))
 	for fc in forestCount:
 		for md in maxDepth:
