@@ -56,7 +56,6 @@ featureVectorCache = dict()
 MfccCache = dict()
 groundTruths = dict()
 lastSpeaker = -1
-gtvWasFlipped = False
 
 def clearVariables():
 	global featureVectors
@@ -304,13 +303,13 @@ def flipTruthValues(truthVect):
 	return map(flip, truthVect)
 
 def modelProcess(modelFunc, tag, ms):
-	global threadSemaphore
-	global gtvWasFlipped
+	global threadSemaphore	
 	def resetModel():
 		if ms.args != None:
 			return modelFunc(ms.args)
 		else:
 			return modelFunc()
+	gtvWasFlipped = False
 	trainFeatureVector = ms.trainFeatureVector
 	trainTruthVector = ms.trainTruthVector
 	testFeatureVector = ms.testFeatureVector
@@ -431,8 +430,8 @@ def runRandomForest():
 		iterlen = numSets
 	else:
 		iterlen = numSets * len(featureVectors.keys())
-	forestCount = [160, 256, 320, 512, 640]
-	maxDepth = [5, 10, 20]
+	forestCount = [4096, 5121, 6045, 8193]
+	maxDepth = [3, 5, 10]
 	mds.resetETAtimer(iterlen * len(forestCount) * len(maxDepth))
 	for fc in forestCount:
 		for md in maxDepth:

@@ -469,6 +469,22 @@ def drawPixelGraphs(inputPath, outputPath):
 		drawPixelGraph(compList, compColors, outputPath + fileName + '_comp.png')
 		f.close()
 
+def getCompCountFromFile(filePath):
+	f = open(filePath, 'r')
+	f.readline()
+	f.readline()
+	predList = textToIntList(f.readline())
+	trueList = textToIntList(f.readline())
+	compList = getComparisonList(predList, trueList)
+	return getCompCountFromList(compList)
+
+def getCompCountFromList(compList):
+	# tp, tn, fn, fp
+	lst = [0,0,0,0]
+	for i in compList:
+		lst[i] += 1
+	return lst
+
 def getComparisonList(predList, trueList):
 	retval = np.zeros(len(predList), dtype='int8')
 	for i in range(len(predList)):
@@ -551,12 +567,13 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 160 256 320 512 640 md 5 10 20 mantest/inferred f0.0 d0.5/"
-outputPath = inputPath + 'stats/'
+# inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 1024 2048 3072 4096 md 5 10 20 mantest/"
+# outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFiles(inputPath)
-results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
-saveToFile(results, outputPath, 2)
-drawPixelGraphs(inputPath, outputPath)
+# results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
+# saveToFile(results, outputPath, 2)
+# drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
 # runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
+print getCompCountFromFile('/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 1024 2048 3072 4096 md 5 10 20 mantest/MFCC_-1_RandomForest_fc_4096_md_5_0_manual.log')
