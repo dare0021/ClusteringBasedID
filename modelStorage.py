@@ -28,6 +28,10 @@ class ModelSettings:
 		self.speakerName = speakerName
 		self.args = args
 
+	# note this "deep copy" makes distinct physical copies only if the variable is a primitive (inc. strings). i.e. testTruthVector will point to the same array, while i and speakerName will be decoupled copies
+	def deepCopySansArgs(self):
+		return ModelSettings(self.i, self.paaFunction, self.trainFeatureVector, self.testFeatureVector, self.trainTruthVector, self.testTruthVector, self.speakerName)
+
 def init(threadSemaphore_input, functionToRun):
 	global threadSemaphore
 	global threadFunction
@@ -105,6 +109,17 @@ def model_Birch():
 	print 'Running Birch'
 	return sklearn.cluster.Birch(n_clusters=sinfo.getNbClasses())
 
+# input in the shape of [(tag1, model1), (tag2, model2), ... ]
+# where tag is any string that identifies the model for human readability
+def ensemble_Voting(modelsUsed):
+	print 'Voting using models:', ", ".join(np.array(modelsUsed)[:,0])
+	return sklearn.ensemble.VotingClassifier(estimators=modelsUsed, voting='hard')
+
+def ensemble_VotingSvmRf(g, c, fc, md):
+	args = (factory_SVM_rbf(gamma=g, c=c), factory_RandomForest(n_estimators=fc, max_depth=md))
+	modelsUsed = [('SVM_RBF', model_SVM_rbf(args[0])), ('RF', model_RandomForest(args[1]))]
+	return ensemble_Voting(modelsUsed)
+
 def runAllModels(ms):
 	runModel(model_KNN, 'PAA_' + str(ms.paaFunction) + '_KNN_' + str(ms.i) + '_' + ms.speakerName, ms)
 	runModel(model_RNC, 'PAA_' + str(ms.paaFunction) + '_RNC_' + str(ms.i) + '_' + ms.speakerName, ms)
@@ -180,3 +195,4 @@ def runRBFvariants2DList(ms, cList, gammaList, iterDone, iterTotal):
 			ms.args = factory_SVM_rbf(gamma, c)
 			runModel(model_SVM_rbf, 'MFCC_' + str(ms.paaFunction) + '_SVM_RBF_g_' + str(gamma) + '_c_' + str(c) + + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 			incrementETAtimer()
+

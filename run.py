@@ -13,16 +13,16 @@ WindowGTVmodes = Enum('average', 'midpoint')
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
-manualTrainTestSet = True
+manualTrainTestSet = False
 trainLabels = ['kim', 'lee', 'seo', 'yoon']
 testLabels = ['joo']
 autoflipOutputIfBelow50 = True
 # leave blank to ignore
-manualTestFile = "joo proc pass 3.wav.mfc"
+manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 # outputPath = inputPath + '1 0.1 avg'
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 3
+numSets = 10
 numThreads = 4
 printTestingTimes = True
 normalizeTrainingSet = True
@@ -430,8 +430,8 @@ def runRandomForest():
 		iterlen = numSets
 	else:
 		iterlen = numSets * len(featureVectors.keys())
-	forestCount = [4096, 5121, 6045, 8193]
-	maxDepth = [3, 5, 10]
+	forestCount = [1024, 2048, 3072, 4096, 5121, 6045, 8193]
+	maxDepth = [3, 5, 10, 20]
 	mds.resetETAtimer(iterlen * len(forestCount) * len(maxDepth))
 	for fc in forestCount:
 		for md in maxDepth:
@@ -448,9 +448,38 @@ def runRandomForest():
 				mds.runModel(mds.model_RandomForest, 'MFCC_' + str(ms.paaFunction) + '_RandomForest_fc_' + str(fc) + '_md_' + str(md) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 				mds.incrementETAtimer()
 
+def runSvmRfEnsemble():
+	clearVariables()
+	loadFeatureVector(inputPath, 'mfcc')
+	if manualTrainTestSet:
+		iterlen = numSets
+	else:
+		iterlen = numSets * len(featureVectors.keys())
+	forestCount = 2048
+	maxDepth = 5
+	gamma = 0.015
+	cVal = 1
+	if not os.path.exists(outputPath):
+		os.mkdir(outputPath)
+	mds.resetETAtimer(iterlen)
+	for i in range(iterlen):
+		fc = forestCount
+		md = maxDepth
+		g = gamma
+		c = cVal		
+		trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector = getSubset()
+		testSpeaker = featureVectors.keys()[lastSpeaker]
+		if lastSpeaker < 0:
+			testSpeaker = 'manual'
+		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
+		mds.runModel(mds.ensemble_VotingSvmRf(g, c, fc, md), 'MFCC_' + str(ms.paaFunction) + '_E_SVMRF_fc_' + str(fc) + '_md_' + str(md) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
+		mds.incrementETAtimer()
+
+
 
 mds.init(threadSemaphore, modelProcess)
 # runPaaFunctions()
 # runSphinxFiles()
 # runRBFvariants()
-runRandomForest()
+# runRandomForest()
+runSvmRfEnsemble()

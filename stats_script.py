@@ -567,13 +567,13 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-# inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 1024 2048 3072 4096 md 5 10 20 mantest/"
-# outputPath = inputPath + 'stats/'
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 4096 5121 6045 8193  md 3 5 10 mantest/"
+outputPath = inputPath + 'stats/'
 # results = loadSingleVariableFiles(inputPath)
-# results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
-# saveToFile(results, outputPath, 2)
-# drawPixelGraphs(inputPath, outputPath)
+results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
+saveToFile(results, outputPath, 2)
+drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
 # runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
-print getCompCountFromFile('/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 1024 2048 3072 4096 md 5 10 20 mantest/MFCC_-1_RandomForest_fc_4096_md_5_0_manual.log')
+# print getCompCountFromFile('/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 1024 2048 3072 4096 md 5 10 20 mantest/MFCC_-1_RandomForest_fc_4096_md_5_0_manual.log')
