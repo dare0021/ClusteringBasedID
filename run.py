@@ -305,7 +305,9 @@ def flipTruthValues(truthVect):
 def modelProcess(modelFunc, tag, ms):
 	global threadSemaphore	
 	def resetModel():
-		if ms.args != None:
+		if ms.args == 'ensembleOverride':
+			return modelFunc
+		elif ms.args != None:
 			return modelFunc(ms.args)
 		else:
 			return modelFunc()
@@ -471,7 +473,7 @@ def runSvmRfEnsemble():
 		testSpeaker = featureVectors.keys()[lastSpeaker]
 		if lastSpeaker < 0:
 			testSpeaker = 'manual'
-		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker)
+		ms = mds.ModelSettings(i, -1, trainFeatureVector, testFeatureVector, trainTruthVector, testTruthVector, testSpeaker, 'ensembleOverride')
 		mds.runModel(mds.ensemble_VotingSvmRf(g, c, fc, md), 'MFCC_' + str(ms.paaFunction) + '_E_SVMRF_fc_' + str(fc) + '_md_' + str(md) + '_' + str(ms.i) + '_' + ms.speakerName, ms)
 		mds.incrementETAtimer()
 
