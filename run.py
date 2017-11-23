@@ -23,7 +23,7 @@ manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 # outputPath = inputPath + '1 0.1 avg'
 outputPath = inputPath + str(datetime.now().time()) + '/'
 numSets = 10
-numThreads = 4
+numThreads = 3
 printTestingTimes = True
 normalizeTrainingSet = True
 # if true normalizes testing set using the normalization parameters found during the training set normalization
