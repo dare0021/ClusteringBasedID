@@ -32,7 +32,7 @@ class ModelSettings:
 	def deepCopySansArgs(self):
 		return ModelSettings(self.i, self.paaFunction, self.trainFeatureVector, self.testFeatureVector, self.trainTruthVector, self.testTruthVector, self.speakerName)
 
-class component_repeater():
+class tiebreaker_repeater():
 	def __init__(self, initial_value=0):
 		self.lastValue = initial_value
 	
@@ -42,6 +42,22 @@ class component_repeater():
 	def get(self):
 		return self.lastValue
 
+class tiebreaker_stochastic():
+	# probabilities should add to 1
+	def __init__(self, possibleValues, probabilities = []):
+		self.possibleValues = possibleValues
+		if len(probabilities) > 0:
+			self.probabilities = probabilities
+		else:
+			self.probabilities = np.ones(len(possibleValues), dtype='float') / len(possibleValues)
+
+	# no update necessary
+	def update(self, newVal):
+		pass
+
+	def get(self):
+		return random.choice(self.possibleValues)
+
 class ensemble_votingWithTiebreaker(sklearn.base.BaseEstimator, sklearn.base.ClassifierMixin):
 	# modelsUsed follows sklearn voting ensemble convention. 2D list, each entry being a tuple ('model tag', modelInstance)
 	def __init__(self, modelsUsed, tiebreaker):
@@ -49,7 +65,7 @@ class ensemble_votingWithTiebreaker(sklearn.base.BaseEstimator, sklearn.base.Cla
 		self.mds = modelsUsed[:,1]
 		self.tags = modelsUsed[:,0]
 		self.tiebreaker = tiebreaker
-		
+
 	def fit(self, X, y):
 		for model in self.mds:
 			model.fit(X, y)
@@ -171,7 +187,7 @@ def ensemble_Voting(modelsUsed):
 def ensemble_VotingSvmRf(g, c, fc, md):
 	args = (factory_SVM_rbf(gamma=g, c=c), factory_RandomForest(n_estimators=fc, max_depth=md))
 	modelsUsed = [('SVM_RBF', model_SVM_rbf(args[0])), ('RF', model_RandomForest(args[1]))]
-	tiebreaker = component_repeater(0)
+	tiebreaker = tiebreaker_repeater(0)
 	print 'Voting using models:', ", ".join(np.array(modelsUsed)[:,0])
 	return ensemble_votingWithTiebreaker(modelsUsed, tiebreaker)
 
