@@ -13,12 +13,12 @@ WindowGTVmodes = Enum('average', 'midpoint')
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
-manualTrainTestSet = False
+manualTrainTestSet = True
 trainLabels = ['kim', 'lee', 'seo', 'yoon']
 testLabels = ['joo']
 autoflipOutputIfBelow50 = True
 # leave blank to ignore
-manualTestFile = ""
+manualTestFile = "joo proc pass 3.wav.mfc"
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 # outputPath = inputPath + '1 0.1 avg'
 outputPath = inputPath + str(datetime.now().time()) + '/'
@@ -457,8 +457,8 @@ def runSvmRfEnsemble():
 		iterlen = numSets
 	else:
 		iterlen = numSets * len(featureVectors.keys())
-	forestCount = 2048
-	maxDepth = 5
+	forestCount = 4096
+	maxDepth = 3
 	gamma = 0.015
 	cVal = 1
 	if not os.path.exists(outputPath):

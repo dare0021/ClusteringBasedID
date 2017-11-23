@@ -32,6 +32,59 @@ class ModelSettings:
 	def deepCopySansArgs(self):
 		return ModelSettings(self.i, self.paaFunction, self.trainFeatureVector, self.testFeatureVector, self.trainTruthVector, self.testTruthVector, self.speakerName)
 
+class component_repeater():
+	def __init__(self, initial_value=0):
+		self.lastValue = initial_value
+	
+	def update(self, newVal):
+		self.lastValue = newVal
+
+	def get(self):
+		return self.lastValue
+
+class ensemble_votingWithTiebreaker(sklearn.base.BaseEstimator, sklearn.base.ClassifierMixin):
+	# modelsUsed follows sklearn voting ensemble convention. 2D list, each entry being a tuple ('model tag', modelInstance)
+	def __init__(self, modelsUsed, tiebreaker):
+		modelsUsed = np.array(modelsUsed)
+		self.mds = modelsUsed[:,1]
+		self.tags = modelsUsed[:,0]
+		self.tiebreaker = tiebreaker
+		
+	def fit(self, X, y):
+		for model in self.mds:
+			model.fit(X, y)
+
+	def predict(self, X):
+		retval = np.zeros(shape=(len(X)))
+		ys = np.zeros(shape=(len(self.mds), len(X)))
+		i = 0
+		for model in self.mds:
+			model.predict(X)
+			ys[i] = y
+			i += 1
+		for j in len(X):
+			iter = y[:,j]
+			d = dict()
+			for yi in iter:
+				if yi in d.keys():
+					d[yi] += 1
+				else:
+					d[yi] = 1
+			maxVal = 0
+			maxKeys = []
+			for key in d.keys():
+				if d[key] > maxVal:
+					maxVal = d[key]
+					maxKeys = [key]
+				elif d[key] == maxVal:
+					maxKeys.append(key)
+			if len(maxKeys) > 1:
+				retval[j] = self.tiebreaker.get(maxKeys)
+			else:
+				retval[j] = maxKeys[0]
+				self.tiebreaker.update(retval[j])
+		return retval
+
 def init(threadSemaphore_input, functionToRun):
 	global threadSemaphore
 	global threadFunction
@@ -118,7 +171,9 @@ def ensemble_Voting(modelsUsed):
 def ensemble_VotingSvmRf(g, c, fc, md):
 	args = (factory_SVM_rbf(gamma=g, c=c), factory_RandomForest(n_estimators=fc, max_depth=md))
 	modelsUsed = [('SVM_RBF', model_SVM_rbf(args[0])), ('RF', model_RandomForest(args[1]))]
-	return ensemble_Voting(modelsUsed)
+	tiebreaker = component_repeater(0)
+	print 'Voting using models:', ", ".join(np.array(modelsUsed)[:,0])
+	return ensemble_votingWithTiebreaker(modelsUsed, tiebreaker)
 
 def runAllModels(ms):
 	runModel(model_KNN, 'PAA_' + str(ms.paaFunction) + '_KNN_' + str(ms.i) + '_' + ms.speakerName, ms)
