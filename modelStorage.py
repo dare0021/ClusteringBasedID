@@ -78,7 +78,7 @@ class ensemble_votingWithTiebreaker(sklearn.base.BaseEstimator, sklearn.base.Cla
 			y = model.predict(X)
 			ys[i] = y
 			i += 1
-		for j in len(X):
+		for j in range(len(X)):
 			iter = y[:,j]
 			d = dict()
 			for yi in iter:
