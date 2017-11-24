@@ -39,10 +39,11 @@ class tiebreaker_repeater():
 	def update(self, newVal):
 		self.lastValue = newVal
 
-	def get(self):
+	def get(self, maxVals):
 		return self.lastValue
 
-class tiebreaker_stochastic():
+# always return from a fixed list
+class tiebreaker_stochasticComplete():
 	# probabilities should add to 1
 	def __init__(self, possibleValues, probabilities = []):
 		self.possibleValues = possibleValues
@@ -55,8 +56,19 @@ class tiebreaker_stochastic():
 	def update(self, newVal):
 		pass
 
-	def get(self):
+	def get(self, maxVals):
 		return random.choice(self.possibleValues)
+
+class tiebreaker_stochasticFromMaxVals():
+	def __init__(self):
+		pass
+
+	# no update necessary
+	def update(self, newVal):
+		pass
+
+	def get(self, maxVals):
+		return random.choice(maxVals)
 
 class ensemble_votingWithTiebreaker(sklearn.base.BaseEstimator, sklearn.base.ClassifierMixin):
 	# modelsUsed follows sklearn voting ensemble convention. 2D list, each entry being a tuple ('model tag', modelInstance)
@@ -75,11 +87,10 @@ class ensemble_votingWithTiebreaker(sklearn.base.BaseEstimator, sklearn.base.Cla
 		ys = np.zeros(shape=(len(self.mds), len(X)))
 		i = 0
 		for model in self.mds:
-			y = model.predict(X)
-			ys[i] = y
+			ys[i] = model.predict(X)
 			i += 1
 		for j in range(len(X)):
-			iter = y[:,j]
+			iter = ys[:,j]
 			d = dict()
 			for yi in iter:
 				if yi in d.keys():
