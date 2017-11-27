@@ -6,6 +6,7 @@ import sklearn
 import numpy as np
 from sklearn import neighbors, svm, cluster
 import speakerInfo as sinfo
+import random
 
 # default 200, in MB
 ram_usage = 1024
@@ -198,7 +199,7 @@ def ensemble_Voting(modelsUsed):
 def ensemble_VotingSvmRf(g, c, fc, md):
 	args = (factory_SVM_rbf(gamma=g, c=c), factory_RandomForest(n_estimators=fc, max_depth=md))
 	modelsUsed = [('SVM_RBF', model_SVM_rbf(args[0])), ('RF', model_RandomForest(args[1]))]
-	tiebreaker = tiebreaker_repeater(0)
+	tiebreaker = tiebreaker_stochasticFromMaxVals()
 	print 'Voting using models:', ", ".join(np.array(modelsUsed)[:,0])
 	return ensemble_votingWithTiebreaker(modelsUsed, tiebreaker)
 
