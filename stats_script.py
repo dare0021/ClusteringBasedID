@@ -90,6 +90,8 @@ def flipper(inputPath, outputPath):
 		return a, float(b)
 	def resInt(i):
 		return int(float(i))
+	def flipResInt(i):
+		return (resInt(i)+1)%2
 	filePaths = [inputPath + f for f in os.listdir(inputPath) if os.path.isfile(inputPath + f) and f.endswith(".log")]
 
 	for filePath in filePaths:		
@@ -104,7 +106,7 @@ def flipper(inputPath, outputPath):
 		f.close()
 
 		acc = 1.0-acc
-		predList = map(resInt, predList[1 : len(predList)-2].split(','))
+		predList = map(flipResInt, predList[1 : len(predList)-2].split(','))
 		gtvList = map(resInt, gtvList[1 : len(gtvList)-2].split(','))
 		gtvTrueCount = 0
 		tpCount = 0
@@ -112,17 +114,13 @@ def flipper(inputPath, outputPath):
 			pred = predList[i]
 			gtv = gtvList[i]
 			if gtv > 0:
-				gtv = 0
-			else:
-				gtv = 1
 				gtvTrueCount += 1
 				if pred > 0:
 					tpCount += 1
 		f1 = float(tpCount) / gtvTrueCount
-		# flip f1 somehow
 
 		f = open(outputPath + fileName, 'w')
-		f.write('accuracy: ' + str(1.0 - acc) + '\tf1: ' + str(f1) + '\n')
+		f.write('accuracy: ' + str(acc) + '\tf1: ' + str(f1) + '\n')
 		f.write('predicted labels followed by truth values\n')
 		f.write(str(predList) + '\n' + str(gtvList))
 		f.close()
@@ -611,15 +609,15 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/ensemble/1 0.1 avg fc 4096 md 3 g 0.015 mantest/"
-outputPath = inputPath + 'stats/'
-# outputPath = inputPath + 'flip/'
-results = loadSingleVariableFiles(inputPath)
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/g0.015 svmwindow1000ms 0.5stride 2minUtt/"
+# outputPath = inputPath + 'stats/'
+outputPath = inputPath + 'flip/'
+# results = loadSingleVariableFiles(inputPath)
 # results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
 # saveToFile(results, outputPath, 2)
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
-runMultiple(inputPath)
+# runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
 # print getCompCountFromFile('/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 1024 2048 3072 4096 md 5 10 20 mantest/MFCC_-1_RandomForest_fc_4096_md_5_0_manual.log')
-# flipper(inputPath, outputPath)
+flipper(inputPath, outputPath)

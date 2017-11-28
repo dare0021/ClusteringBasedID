@@ -13,16 +13,16 @@ WindowGTVmodes = Enum('average', 'midpoint')
 
 # primary inputs
 inputPath = "/home/jkih/Music/sukwoo_2min_utt/"
-manualTrainTestSet = True
+manualTrainTestSet = False
 trainLabels = ['kim', 'lee', 'seo', 'yoon']
 testLabels = ['joo']
 autoflipOutputIfBelow50 = True
 # leave blank to ignore
-manualTestFile = "joo proc pass 3.wav.mfc"
+manualTestFile = ""
 manualTestDiaFilePath = "joo proc pass 3.wav.diarization.comp"
 # outputPath = inputPath + '1 0.1 avg'
 outputPath = inputPath + str(datetime.now().time()) + '/'
-numSets = 3
+numSets = 1
 numThreads = 3
 printTestingTimes = True
 normalizeTrainingSet = True
