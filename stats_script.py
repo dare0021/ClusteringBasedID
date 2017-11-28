@@ -117,7 +117,8 @@ def flipper(inputPath, outputPath):
 				gtvTrueCount += 1
 				if pred > 0:
 					tpCount += 1
-		f1 = float(tpCount) / gtvTrueCount
+		recall = float(tpCount) / gtvTrueCount
+		f1 = 2 * acc * recall / (acc + recall)
 
 		f = open(outputPath + fileName, 'w')
 		f.write('accuracy: ' + str(acc) + '\tf1: ' + str(f1) + '\n')
@@ -609,15 +610,15 @@ def runMultiple(parentDir):
 		p = Process(target=asyncOp, args=(di + '/', di + '/stats/'))
 		p.start()
 
-inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/g0.015 svmwindow1000ms 0.5stride 2minUtt/"
-# outputPath = inputPath + 'stats/'
-outputPath = inputPath + 'flip/'
-# results = loadSingleVariableFiles(inputPath)
+inputPath = "/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs archive/g0.015 svmwindow1000ms 0.5stride 2minUtt/flip/"
+outputPath = inputPath + 'stats/'
+# outputPath = inputPath + 'flip/'
+results = loadSingleVariableFiles(inputPath)
 # results = loadTwoVariableFiles(inputPath, '_fc_', '_md_', 'forestCount', 'maxDepth')
 # saveToFile(results, outputPath, 2)
 # drawPixelGraphs(inputPath, outputPath)
 # variableSearchGraph(results, variableMarker = '_md_', variableName = 'depth', outputPath = outputPath, terminatorMarker = '_')
-# runMultiple(inputPath)
+runMultiple(inputPath)
 # runMultiple("/home/jkih/Music/sukwoo_2min_utt/5s window 0.3333 stride/")
 # print getCompCountFromFile('/media/jkih/b6988675-1154-47d9-9d37-4a80b771f7fe/new/sukwoo/shortsegs randomforest/1 0.1 avg fc 1024 2048 3072 4096 md 5 10 20 mantest/MFCC_-1_RandomForest_fc_4096_md_5_0_manual.log')
-flipper(inputPath, outputPath)
+# flipper(inputPath, outputPath)
